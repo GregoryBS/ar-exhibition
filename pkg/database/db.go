@@ -25,6 +25,7 @@ func Connect() *DBManager {
 	connString := os.Getenv("DATABASE_URL")
 	pool, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
+		fmt.Println("Connection to postgres failed")
 		return nil
 	}
 	fmt.Println("Successful connection to postgres")
