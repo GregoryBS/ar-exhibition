@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	querySelectAll   = `select id, name, technique, image, author, year, height, width from picture;`
+	querySelectAll   = `select id, name, image, height, width from picture;`
 	querySelectByExh = `select id, name, technique, image, author, year, height, width 
 	from picture where exh_id = $1;`
 )
@@ -35,7 +35,7 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Pict
 
 	for rows.Next() {
 		row := &domain.Picture{}
-		err = rows.Scan(&row.ID, &row.Name, &row.Technique, &row.Image, &row.Author, &row.Year, &row.Height, &row.Width)
+		err = rows.Scan(&row.ID, &row.Name, &row.Technique, &row.Image, &row.Author, &row.Year, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result
 		}
@@ -55,7 +55,7 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 
 	for rows.Next() {
 		row := &domain.Picture{}
-		err = rows.Scan(&row.ID, &row.Name, &row.Technique, &row.Image, &row.Author, &row.Year, &row.Height, &row.Width)
+		err = rows.Scan(&row.ID, &row.Name, &row.Technique, &row.Image, &row.Author, &row.Year, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result
 		}

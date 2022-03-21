@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-const querySelectTop = `select id, name, country, city, address, year, description, director, image
+const querySelectTop = `select id, name, image, image_height, image_width
 	from museum order by popular desc limit $1;`
 
 type MuseumRepository struct {
@@ -33,7 +33,7 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 
 	for rows.Next() {
 		row := &domain.Museum{}
-		err = rows.Scan(&row.ID, &row.Name, &row.Country, &row.City, &row.Address, &row.Year, &row.Description, &row.Director, &row.Image)
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result
 		}
