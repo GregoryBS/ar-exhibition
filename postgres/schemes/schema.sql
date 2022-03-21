@@ -8,7 +8,7 @@ create table museum
     year                int,
     description         text not null,
     director            text,
-    image               text,
+    image               text default '',
     popular             bigint not null default 0
 );
 
@@ -21,7 +21,7 @@ create table exhibition
     museum_id   int not null,
     name        text not null,
     description text not null,
-    image       text,
+    image       text default '',
     date_from   timestamp with time zone,
     date_to     timestamp with time zone,
     popular     bigint not null default 0
@@ -36,7 +36,7 @@ create table picture
     exh_id      int not null,
     name        text not null,
     technique   text not null,
-    image       text not null,
+    image       text not null default '',
     author      text not null,
     year        int,
     height      int not null,

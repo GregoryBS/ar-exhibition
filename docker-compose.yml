@@ -33,7 +33,7 @@ services:
     depends_on:
       - database
     environment:
-      DATABASE_URL: "postgres://postgres:postgres@database:5432/art"
+      DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
 
   exhibition:
     build:
@@ -44,7 +44,7 @@ services:
     depends_on:
       - database
     environment:
-      DATABASE_URL: "postgres://postgres:postgres@database:5432/art"
+      DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
 
   picture:
     build:
@@ -55,7 +55,7 @@ services:
     depends_on:
       - database
     environment:
-      DATABASE_URL: "postgres://postgres:postgres@database:5432/art"
+      DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
 
 volumes:
   db-data:
