@@ -1,4 +1,4 @@
-CREATE TABLE museum
+create table museum
 (
     id                  serial primary key,
     name                text not null,
@@ -15,7 +15,7 @@ CREATE TABLE museum
 insert into museum(name, country, city, address, year, description, director) 
 values('Museum', 'Russia', 'Moscow', '2-ya Baumanskaya, 5', 2022, 'Most beautiful museum in Moscow', 'Gordin Michael');
 
-CREATE TABLE exhibition
+create table exhibition
 (
     id          serial primary key,
     museum_id   int not null,
@@ -30,7 +30,7 @@ CREATE TABLE exhibition
 insert into exhibition(museum_id, name, description, date_from, date_to) 
 values(1, 'Exhibition', 'Most beautiful exhibition in Moscow', '2022-10-08', '2022-10-11');
 
-CREATE TABLE picture
+create table picture
 (
     id          serial primary key,
     exh_id      int not null,
