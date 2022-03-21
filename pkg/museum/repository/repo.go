@@ -37,6 +37,7 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 		if err != nil {
 			return result
 		}
+		result = append(result, row)
 	}
 	return result
 }

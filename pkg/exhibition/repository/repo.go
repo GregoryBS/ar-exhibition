@@ -37,6 +37,7 @@ func (repo *ExhibitionRepository) ExhibitionTop(limit int) []*domain.Exhibition 
 		if err != nil {
 			return result
 		}
+		result = append(result, row)
 	}
 	return result
 }

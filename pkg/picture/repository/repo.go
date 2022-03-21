@@ -39,6 +39,7 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Pict
 		if err != nil {
 			return result
 		}
+		result = append(result, row)
 	}
 	return result
 }
@@ -58,6 +59,7 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 		if err != nil {
 			return result
 		}
+		result = append(result, row)
 	}
 	return result
 }
