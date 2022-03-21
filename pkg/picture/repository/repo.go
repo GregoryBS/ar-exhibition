@@ -4,6 +4,7 @@ import (
 	"ar_exhibition/pkg/database"
 	"ar_exhibition/pkg/domain"
 	"context"
+	"fmt"
 )
 
 const (
@@ -46,6 +47,7 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 	result := make([]*domain.Picture, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectAll)
 	if err != nil {
+		fmt.Println(err)
 		return result
 	}
 	defer rows.Close()

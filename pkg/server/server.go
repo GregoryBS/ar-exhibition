@@ -9,11 +9,12 @@ import (
 func Run(Configure func(*aero.Application, interface{}) *aero.Application,
 	funcs ...func(interface{}) interface{}) {
 	app := aero.New()
-	db := database.Connect()
 
+	var db *database.DBManager
 	var repo, usecases, handlers interface{}
 	switch len(funcs) {
 	case 3:
+		db = database.Connect()
 		repo = funcs[2](db)
 		fallthrough
 	case 2:

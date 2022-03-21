@@ -4,6 +4,7 @@ import (
 	"ar_exhibition/pkg/database"
 	"ar_exhibition/pkg/domain"
 	"context"
+	"fmt"
 )
 
 const querySelectTop = `select id, name, country, city, address, year, description, director, image
@@ -25,6 +26,7 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 	result := make([]*domain.Museum, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectTop, limit)
 	if err != nil {
+		fmt.Println(err)
 		return result
 	}
 	defer rows.Close()
