@@ -14,35 +14,50 @@ services:
       - 5432:5432
 
   gateway:
+    build:
+      context: .
+      args:
+        service: gateway
+      dockerfile: Dockerfile
     depends_on:
       - museum
       - exhibition
       - picture
     ports:
       - 8080:8080
-    environment:
-      service: gateway
 
   museum:
+    build:
+      context: .
+      args:
+        service: museum
+      dockerfile: Dockerfile
     depends_on:
       - database
     environment:
       DATABASE_URL: "postgres://program:test@database:5432/art"
-      service: museum
 
   exhibition:
+    build:
+      context: .
+      args:
+        service: exhibition
+      dockerfile: Dockerfile
     depends_on:
       - database
     environment:
       DATABASE_URL: "postgres://program:test@database:5432/art"
-      service: exhibition
 
   picture:
+    build:
+      context: .
+      args:
+        service: picture
+      dockerfile: Dockerfile
     depends_on:
       - database
     environment:
       DATABASE_URL: "postgres://program:test@database:5432/art"
-      service: picture
 
 volumes:
   db-data:
