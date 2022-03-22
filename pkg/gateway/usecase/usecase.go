@@ -41,8 +41,8 @@ func (u *GatewayUsecase) GetMain() *domain.MainPage {
 	if err != nil {
 		return &domain.MainPage{Museums: museums, Exhibitions: exhibitions}
 	}
+	defer resp.Body.Close()
 	utils.DecodeJSON(resp.Body, &pictures)
-	resp.Body.Close()
 	return &domain.MainPage{Museums: museums, Exhibitions: exhibitions, Pictures: pictures}
 }
 
@@ -77,6 +77,7 @@ func (u *GatewayUsecase) GetExhibition(id int) (*domain.Exhibition, *domain.Erro
 	} else if resp.StatusCode == http.StatusOK {
 		utils.DecodeJSON(resp.Body, &exhibition.Pictures)
 	}
+	defer resp.Body.Close()
 	return exhibition, nil
 }
 
@@ -98,5 +99,6 @@ func (u *GatewayUsecase) GetMuseum(id int) (*domain.Museum, *domain.ErrorRespons
 	} else if resp.StatusCode == http.StatusOK {
 		utils.DecodeJSON(resp.Body, &museum.Exhibitions)
 	}
+	defer resp.Body.Close()
 	return museum, nil
 }

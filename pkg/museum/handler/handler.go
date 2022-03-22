@@ -25,6 +25,7 @@ func ConfigureMuseum(app *aero.Application, handlers interface{}) *aero.Applicat
 	h, ok := handlers.(*MuseumHandler)
 	if ok {
 		app.Get(utils.MuseumTop, h.GetMuseumTop)
+		app.Get(utils.MuseumID, h.GetMuseumID)
 	}
 	return app
 }

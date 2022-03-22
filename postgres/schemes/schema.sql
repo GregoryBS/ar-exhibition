@@ -11,7 +11,7 @@ create table museum
 );
 
 insert into museum(name, info, description, image, image_height, image_width) 
-values('Museum', '{"country":"Russia","city":"Moscow","address";"2-ya Baumanskaya, 5","year":"2022","director":"Gordin Michael"}'::json, 'Most beautiful museum in Moscow', 'default.jpg', 835, 600);
+values('Museum', '{"country":"Russia","city":"Moscow","address":"2-ya Baumanskaya, 5","year":"2022","director":"Gordin Michael"}'::json, 'Most beautiful museum in Moscow', 'default.jpg', 835, 600);
 
 create table exhibition
 (
