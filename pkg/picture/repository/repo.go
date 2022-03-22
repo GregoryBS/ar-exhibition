@@ -10,8 +10,10 @@ import (
 
 const (
 	querySelectAll   = `select id, name, image, height, width from picture;`
-	querySelectByExh = `select id, name, technique, image, author, year, height, width 
+	querySelectByExh = `select id, name, image, height, width 
 	from picture where exh_id = $1;`
+	querySelectOne = `select id, name, image, description, info, height, width
+	from picture where id = $1;`
 )
 
 type PictureRepository struct {
@@ -36,7 +38,7 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Pict
 
 	for rows.Next() {
 		row := &domain.Picture{}
-		err = rows.Scan(&row.ID, &row.Name, &row.Technique, &row.Image, &row.Author, &row.Year, &row.Sizes.Height, &row.Sizes.Width)
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result
 		}
@@ -65,4 +67,14 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 		result = append(result, row)
 	}
 	return result
+}
+
+func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
+	pic := &domain.Picture{}
+	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
+	err := row.Scan(&pic.ID, &pic.Name, &pic.Image, &pic.Description, &pic.Info, &pic.Sizes.Height, &pic.Sizes.Width)
+	if err != nil {
+		return nil, err
+	}
+	return pic, nil
 }

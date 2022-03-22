@@ -39,13 +39,12 @@ create table picture
     id          serial primary key,
     exh_id      int not null,
     name        text not null,
-    technique   text not null,
     image       text not null,
-    author      text not null,
-    year        int,
+    description text not null,
+    info        json not null default '',
     height      int not null,
     width       int not null
 );
 
-insert into picture(exh_id, name, technique, image, author, year, height, width) 
-values(1, 'Cat', 'Computer graphics', 'default.jpg', 'GregoryBS', 2021, 835, 600);
+insert into picture(exh_id, name, image, description, info, height, width) 
+values(1, 'Cat', 'default.jpg', 'First picture in the app', '{"author":"GregoryBS","year":"2021","technique":"Computer graphics"}'::json, 835, 600);

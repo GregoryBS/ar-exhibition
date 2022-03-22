@@ -24,3 +24,7 @@ func (u *PictureUsecase) GetPictures(exhibition int) []*domain.Picture {
 		return u.repo.AllPictures()
 	}
 }
+
+func (u *PictureUsecase) GetPictureID(id int) (*domain.Picture, error) {
+	return u.repo.PictureID(id)
+}

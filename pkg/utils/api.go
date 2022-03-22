@@ -8,7 +8,8 @@ const (
 )
 
 const (
-	GatewayApiMain = "/api/v1/"
+	GatewayApiMain      = "/api/v1/"
+	GatewayApiPictureID = "/api/v1/pictures/:id"
 )
 
 const (
@@ -23,4 +24,5 @@ const (
 
 const (
 	BasePictureApi = "/api/v1/pictures"
+	PictureID      = BasePictureApi + "/:id"
 )

@@ -27,13 +27,12 @@ type MuseumPage struct {
 }
 
 type Picture struct {
-	ID        int       `json:"id,omitempty"`
-	Name      string    `json:"name,omitempty"`
-	Year      int       `json:"year,omitempty"`
-	Author    string    `json:"author,omitempty"`
-	Technique string    `json:"technique,omitempty"`
-	Image     string    `json:"picture,omitempty"`
-	Sizes     ImageSize `json:"pictureSize,omitempty"`
+	ID          int               `json:"id,omitempty"`
+	Name        string            `json:"name,omitempty"`
+	Image       string            `json:"picture,omitempty"`
+	Sizes       ImageSize         `json:"pictureSize,omitempty"`
+	Description string            `json:"descr,omitempty"`
+	Info        map[string]string `json:"info,omitempty"`
 }
 
 type Exhibition struct {
@@ -50,4 +49,8 @@ type MainPage struct {
 	Museums     []*Museum     `json:"topMuseum"`
 	Exhibitions []*Exhibition `json:"topExhibition"`
 	Pictures    []*Picture    `json:"recommendation"`
+}
+
+type ErrorResponse struct {
+	Message string `json:"message"`
 }
