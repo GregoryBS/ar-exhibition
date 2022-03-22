@@ -76,5 +76,6 @@ func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
 	if err != nil {
 		return nil, err
 	}
+	pic.Image = utils.Service + pic.Image
 	return pic, nil
 }

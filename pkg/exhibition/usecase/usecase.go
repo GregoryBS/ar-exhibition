@@ -20,3 +20,15 @@ func ExhibitionUsecases(repo interface{}) interface{} {
 func (u *ExhibitionUsecase) GetExhibitionTop() []*domain.Exhibition {
 	return u.repo.ExhibitionTop(5)
 }
+
+func (u *ExhibitionUsecase) GetExhibitions(museum int) []*domain.Exhibition {
+	if museum > 0 {
+		return u.repo.ExhibitionByMuseum(museum)
+	} else {
+		return u.repo.AllExhibitions()
+	}
+}
+
+func (u *ExhibitionUsecase) GetExhibitionID(id int) (*domain.Exhibition, error) {
+	return u.repo.ExhibitionID(id)
+}

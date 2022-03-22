@@ -20,3 +20,7 @@ func MuseumUsecases(repo interface{}) interface{} {
 func (u *MuseumUsecase) GetMuseumTop() []*domain.Museum {
 	return u.repo.MuseumTop(5)
 }
+
+func (u *MuseumUsecase) GetMuseumID(id int) (*domain.Museum, error) {
+	return u.repo.MuseumID(id)
+}

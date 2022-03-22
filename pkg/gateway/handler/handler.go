@@ -27,6 +27,8 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 	if ok {
 		app.Get(utils.GatewayApiMain, h.GetMain)
 		app.Get(utils.GatewayApiPictureID, h.GetPicture)
+		app.Get(utils.GatewayApiExhibitionID, h.GetExhibition)
+		app.Get(utils.GatewayApiMuseumID, h.GetMuseum)
 	}
 	return app
 }
@@ -49,4 +51,34 @@ func (h *GatewayHandler) GetPicture(ctx aero.Context) error {
 		return ctx.JSON(msg)
 	}
 	return ctx.JSON(picture)
+}
+
+func (h *GatewayHandler) GetExhibition(ctx aero.Context) error {
+	id, err := strconv.Atoi(ctx.Get("id"))
+	if err != nil {
+		resp := domain.ErrorResponse{Message: "id not a number"}
+		return ctx.JSON(resp)
+	}
+
+	exhibition, msg := h.u.GetExhibition(id)
+	if msg != nil {
+		ctx.SetStatus(http.StatusNotFound)
+		return ctx.JSON(msg)
+	}
+	return ctx.JSON(exhibition)
+}
+
+func (h *GatewayHandler) GetMuseum(ctx aero.Context) error {
+	id, err := strconv.Atoi(ctx.Get("id"))
+	if err != nil {
+		resp := domain.ErrorResponse{Message: "id not a number"}
+		return ctx.JSON(resp)
+	}
+
+	museum, msg := h.u.GetMuseum(id)
+	if msg != nil {
+		ctx.SetStatus(http.StatusNotFound)
+		return ctx.JSON(msg)
+	}
+	return ctx.JSON(museum)
 }

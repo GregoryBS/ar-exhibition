@@ -8,21 +8,27 @@ const (
 )
 
 const (
-	GatewayApiMain      = "/api/v1/"
-	GatewayApiPictureID = "/api/v1/pictures/:id"
+	GatewayApiMain         = "/api/v1/"
+	GatewayApiPictureID    = "/api/v1/pictures/:id"
+	GatewayApiExhibitionID = "/api/v1/exhibitions/:id"
+	GatewayApiMuseumID     = "/api/v1/museums/:id"
 )
 
 const (
 	BaseMuseumApi = "/api/v1/museums"
 	MuseumTop     = BaseMuseumApi + "/top"
+	MuseumID      = BaseMuseumApi + "/:id"
 )
 
 const (
-	BaseExhibitionApi = "/api/v1/exhibitions"
-	ExhibitionTop     = BaseExhibitionApi + "/top"
+	BaseExhibitionApi  = "/api/v1/exhibitions"
+	ExhibitionTop      = BaseExhibitionApi + "/top"
+	ExhibitionID       = BaseExhibitionApi + "/:id"
+	ExhibitionByMuseum = BaseExhibitionApi + "?museumID="
 )
 
 const (
-	BasePictureApi = "/api/v1/pictures"
-	PictureID      = BasePictureApi + "/:id"
+	BasePictureApi      = "/api/v1/pictures"
+	PictureID           = BasePictureApi + "/:id"
+	PictureByExhibition = BasePictureApi + "?exhibitionID="
 )

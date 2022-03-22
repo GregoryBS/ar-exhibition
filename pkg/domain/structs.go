@@ -6,17 +6,18 @@ type ImageSize struct {
 }
 
 type Museum struct {
-	ID          int          `json:"id,omitempty"`
-	Name        string       `json:"name,omitempty"`
-	Country     string       `json:"country,omitempty"`
-	City        string       `json:"city,omitempty"`
-	Year        int          `json:"year,omitempty"`
-	Description string       `json:"descr,omitempty"`
-	Address     string       `json:"address,omitempty"`
-	Director    string       `json:"director,omitempty"`
-	Image       string       `json:"picture,omitempty"`
-	Sizes       ImageSize    `json:"pictureSize,omitempty"`
-	Exhibitions []Exhibition `json:"exhibitions,omitempty"`
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	// Country     string            `json:"country,omitempty"`
+	// City        string            `json:"city,omitempty"`
+	// Year        int               `json:"year,omitempty"`
+	Description string            `json:"descr,omitempty"`
+	Info        map[string]string `json:"info,omitempty"`
+	// Address     string            `json:"address,omitempty"`
+	// Director    string            `json:"director,omitempty"`
+	Image       string        `json:"picture,omitempty"`
+	Sizes       ImageSize     `json:"pictureSize,omitempty"`
+	Exhibitions []*Exhibition `json:"exhibitions,omitempty"`
 }
 
 type MuseumPage struct {
@@ -36,13 +37,13 @@ type Picture struct {
 }
 
 type Exhibition struct {
-	ID          int       `json:"id,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	Description string    `json:"description,omitempty"`
-	From        string    `json:"dateFrom,omitempty"`
-	To          string    `json:"dateTo,omitempty"`
-	Image       string    `json:"picture,omitempty"`
-	Sizes       ImageSize `json:"pictureSize,omitempty"`
+	ID          int               `json:"id,omitempty"`
+	Name        string            `json:"name,omitempty"`
+	Description string            `json:"description,omitempty"`
+	Info        map[string]string `json:"info,omitempty"`
+	Image       string            `json:"picture,omitempty"`
+	Sizes       ImageSize         `json:"pictureSize,omitempty"`
+	Pictures    []*Picture        `json:"content,omitempty"`
 }
 
 type MainPage struct {

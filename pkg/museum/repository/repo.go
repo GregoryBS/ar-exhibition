@@ -8,8 +8,12 @@ import (
 	"fmt"
 )
 
-const querySelectTop = `select id, name, image, image_height, image_width
+const (
+	querySelectTop = `select id, name, image, image_height, image_width
 	from museum order by popular desc limit $1;`
+	querySelectOne = `select id, name, image, description, info, image_height, image_width
+	from museum where id = $1;`
+)
 
 type MuseumRepository struct {
 	db *database.DBManager
@@ -42,4 +46,15 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 		result = append(result, row)
 	}
 	return result
+}
+
+func (repo *MuseumRepository) MuseumID(id int) (*domain.Museum, error) {
+	museum := &domain.Museum{}
+	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
+	err := row.Scan(&museum.ID, &museum.Name, &museum.Image, &museum.Description, &museum.Info, &museum.Sizes.Height, &museum.Sizes.Width)
+	if err != nil {
+		return nil, err
+	}
+	museum.Image = utils.Service + museum.Image
+	return museum, nil
 }

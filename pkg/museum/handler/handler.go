@@ -3,6 +3,8 @@ package handler
 import (
 	"ar_exhibition/pkg/museum/usecase"
 	"ar_exhibition/pkg/utils"
+	"net/http"
+	"strconv"
 
 	"github.com/aerogo/aero"
 )
@@ -30,4 +32,14 @@ func ConfigureMuseum(app *aero.Application, handlers interface{}) *aero.Applicat
 func (h *MuseumHandler) GetMuseumTop(ctx aero.Context) error {
 	museums := h.u.GetMuseumTop()
 	return ctx.JSON(museums)
+}
+
+func (h *MuseumHandler) GetMuseumID(ctx aero.Context) error {
+	id, _ := strconv.Atoi(ctx.Get("id"))
+	museum, err := h.u.GetMuseumID(id)
+	if err != nil {
+		ctx.SetStatus(http.StatusNotFound)
+		return ctx.JSON(nil)
+	}
+	return ctx.JSON(museum)
 }
