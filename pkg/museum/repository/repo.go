@@ -50,11 +50,13 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 
 func (repo *MuseumRepository) MuseumID(id int) (*domain.Museum, error) {
 	museum := &domain.Museum{}
+	params := make(map[string]string, 0)
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
-	err := row.Scan(&museum.ID, &museum.Name, &museum.Image, &museum.Description, &museum.Info, &museum.Sizes.Height, &museum.Sizes.Width)
+	err := row.Scan(&museum.ID, &museum.Name, &museum.Image, &museum.Description, &params, &museum.Sizes.Height, &museum.Sizes.Width)
 	if err != nil {
 		return nil, err
 	}
 	museum.Image = utils.Service + museum.Image
+	museum.Info = utils.MapJSON(params)
 	return museum, nil
 }

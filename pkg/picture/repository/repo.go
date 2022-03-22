@@ -6,13 +6,14 @@ import (
 	"ar_exhibition/pkg/utils"
 	"context"
 	"fmt"
+	"strings"
 )
 
 const (
 	querySelectAll   = `select id, name, image, height, width from picture;`
 	querySelectByExh = `select id, name, image, height, width 
 	from picture where exh_id = $1;`
-	querySelectOne = `select id, name, image, description, info, height, width
+	querySelectOne = `select id, name, image, description, info
 	from picture where id = $1;`
 )
 
@@ -42,7 +43,7 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Pict
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.Service + row.Image[:strings.Index(row.Image, ",")]
 		result = append(result, row)
 	}
 	return result
@@ -63,7 +64,7 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.Service + row.Image[:strings.Index(row.Image, ",")]
 		result = append(result, row)
 	}
 	return result
@@ -71,11 +72,17 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 
 func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
 	pic := &domain.Picture{}
+	params := make(map[string]string, 0)
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
-	err := row.Scan(&pic.ID, &pic.Name, &pic.Image, &pic.Description, &pic.Info, &pic.Sizes.Height, &pic.Sizes.Width)
+	err := row.Scan(&pic.ID, &pic.Name, &pic.Image, &pic.Description, &params)
 	if err != nil {
 		return nil, err
 	}
-	pic.Image = utils.Service + pic.Image
+	buf := strings.Split(pic.Image, ",")
+	for _, p := range buf {
+		p = utils.Service + p
+	}
+	pic.Image = strings.Join(buf, ",")
+	pic.Info = utils.MapJSON(params)
 	return pic, nil
 }

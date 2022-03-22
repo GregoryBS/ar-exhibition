@@ -54,12 +54,14 @@ func (repo *ExhibitionRepository) ExhibitionTop(limit int) []*domain.Exhibition 
 
 func (repo *ExhibitionRepository) ExhibitionID(id int) (*domain.Exhibition, error) {
 	exh := &domain.Exhibition{}
+	params := make(map[string]string, 0)
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
-	err := row.Scan(&exh.ID, &exh.Name, &exh.Image, &exh.Description, &exh.Info, &exh.Sizes.Height, &exh.Sizes.Width)
+	err := row.Scan(&exh.ID, &exh.Name, &exh.Image, &exh.Description, &params, &exh.Sizes.Height, &exh.Sizes.Width)
 	if err != nil {
 		return nil, err
 	}
 	exh.Image = utils.Service + exh.Image
+	exh.Info = utils.MapJSON(params)
 	return exh, nil
 }
 

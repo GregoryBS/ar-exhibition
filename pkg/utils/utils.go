@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"ar_exhibition/pkg/domain"
 	"encoding/json"
 	"io"
 )
@@ -18,6 +19,14 @@ func EncodeJSON(src interface{}) []byte {
 	result, err := json.Marshal(src)
 	if err != nil {
 		return nil
+	}
+	return result
+}
+
+func MapJSON(obj map[string]string) []*domain.Param {
+	result := make([]*domain.Param, 0)
+	for k, v := range obj {
+		result = append(result, &domain.Param{Type: k, Value: v})
 	}
 	return result
 }

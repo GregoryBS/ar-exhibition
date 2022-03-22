@@ -11,7 +11,7 @@ create table museum
 );
 
 insert into museum(name, info, description, image, image_height, image_width) 
-values('Museum', '{"country":"Russia","city":"Moscow","address":"2-ya Baumanskaya, 5","year":"2022","director":"Gordin Michael"}'::json, 'Most beautiful museum in Moscow', 'default.jpg', 835, 600);
+values('Museum', '{"Страна":"Россия","Город":"Москва","Адрес":"2-я Бауманская, 5","Год":"2022","Руководитель":"Гордин Михаил"}'::json, 'Most beautiful museum in Moscow', 'default.jpg', 835, 600);
 
 create table exhibition
 (
@@ -27,7 +27,7 @@ create table exhibition
 );
 
 insert into exhibition(museum_id, name, description, info, image, image_height, image_width) 
-values(1, 'Exhibition', 'Most beautiful exhibition in Moscow', '{"date from":"2022-10-08","date to":"2022-10-11"}'::json, 'default.jpg', 835, 600);
+values(1, 'Exhibition', 'Most beautiful exhibition in Moscow', '{"Начало":"2022-10-08","Конец":"2022-10-11"}'::json, 'default.jpg', 835, 600);
 
 create table picture
 (
@@ -42,4 +42,4 @@ create table picture
 );
 
 insert into picture(exh_id, name, image, description, info, height, width) 
-values(1, 'Cat', 'default.jpg', 'First picture in the app', '{"author":"GregoryBS","year":"2021","technique":"Computer graphics"}'::json, 835, 600);
+values(1, 'Cat', 'default.jpg,notfound.jpg', 'First picture in the app', '{"Автор":"Человек","Год":"2021","Техника":"Компьютерная графика","Размер":"3 х 2"}'::json, 835, 600);
