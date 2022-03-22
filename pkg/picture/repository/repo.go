@@ -3,6 +3,7 @@ package repository
 import (
 	"ar_exhibition/pkg/database"
 	"ar_exhibition/pkg/domain"
+	"ar_exhibition/pkg/utils"
 	"context"
 	"fmt"
 )
@@ -39,6 +40,7 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Pict
 		if err != nil {
 			return result
 		}
+		row.Image = utils.Service + row.Image
 		result = append(result, row)
 	}
 	return result
@@ -55,10 +57,11 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 
 	for rows.Next() {
 		row := &domain.Picture{}
-		err = rows.Scan(&row.ID, &row.Name, &row.Technique, &row.Image, &row.Author, &row.Year, &row.Sizes.Height, &row.Sizes.Width)
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result
 		}
+		row.Image = utils.Service + row.Image
 		result = append(result, row)
 	}
 	return result

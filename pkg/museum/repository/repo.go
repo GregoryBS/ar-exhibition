@@ -3,6 +3,7 @@ package repository
 import (
 	"ar_exhibition/pkg/database"
 	"ar_exhibition/pkg/domain"
+	"ar_exhibition/pkg/utils"
 	"context"
 	"fmt"
 )
@@ -37,6 +38,7 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 		if err != nil {
 			return result
 		}
+		row.Image = utils.Service + row.Image
 		result = append(result, row)
 	}
 	return result
