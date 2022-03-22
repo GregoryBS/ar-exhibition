@@ -41,7 +41,7 @@ func (repo *ExhibitionRepository) ExhibitionTop(limit int) []*domain.Exhibition 
 	defer rows.Close()
 
 	for rows.Next() {
-		row := &domain.Exhibition{}
+		row := &domain.Exhibition{Sizes: &domain.ImageSize{}}
 		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result
@@ -53,7 +53,7 @@ func (repo *ExhibitionRepository) ExhibitionTop(limit int) []*domain.Exhibition 
 }
 
 func (repo *ExhibitionRepository) ExhibitionID(id int) (*domain.Exhibition, error) {
-	exh := &domain.Exhibition{}
+	exh := &domain.Exhibition{Sizes: &domain.ImageSize{}}
 	params := make(map[string]string, 0)
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
 	err := row.Scan(&exh.ID, &exh.Name, &exh.Image, &exh.Description, &params, &exh.Sizes.Height, &exh.Sizes.Width)
@@ -74,7 +74,7 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int) []*domain.Exhib
 	defer rows.Close()
 
 	for rows.Next() {
-		row := &domain.Exhibition{}
+		row := &domain.Exhibition{Sizes: &domain.ImageSize{}}
 		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result
@@ -95,7 +95,7 @@ func (repo *ExhibitionRepository) AllExhibitions() []*domain.Exhibition {
 	defer rows.Close()
 
 	for rows.Next() {
-		row := &domain.Exhibition{}
+		row := &domain.Exhibition{Sizes: &domain.ImageSize{}}
 		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result

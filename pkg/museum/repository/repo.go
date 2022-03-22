@@ -37,7 +37,7 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 	defer rows.Close()
 
 	for rows.Next() {
-		row := &domain.Museum{}
+		row := &domain.Museum{Sizes: &domain.ImageSize{}}
 		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result
@@ -49,7 +49,7 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 }
 
 func (repo *MuseumRepository) MuseumID(id int) (*domain.Museum, error) {
-	museum := &domain.Museum{}
+	museum := &domain.Museum{Sizes: &domain.ImageSize{}}
 	params := make(map[string]string, 0)
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
 	err := row.Scan(&museum.ID, &museum.Name, &museum.Image, &museum.Description, &params, &museum.Sizes.Height, &museum.Sizes.Width)

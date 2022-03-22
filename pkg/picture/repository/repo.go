@@ -38,7 +38,7 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Pict
 	defer rows.Close()
 
 	for rows.Next() {
-		row := &domain.Picture{}
+		row := &domain.Picture{Sizes: &domain.ImageSize{}}
 		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result
@@ -59,7 +59,7 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 	defer rows.Close()
 
 	for rows.Next() {
-		row := &domain.Picture{}
+		row := &domain.Picture{Sizes: &domain.ImageSize{}}
 		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
 		if err != nil {
 			return result
@@ -79,8 +79,8 @@ func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
 		return nil, err
 	}
 	buf := strings.Split(pic.Image, ",")
-	for _, p := range buf {
-		p = utils.Service + p
+	for i := range buf {
+		buf[i] = utils.Service + buf[i]
 	}
 	pic.Image = strings.Join(buf, ",")
 	pic.Info = utils.MapJSON(params)
