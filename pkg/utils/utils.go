@@ -4,6 +4,7 @@ import (
 	"ar_exhibition/pkg/domain"
 	"encoding/json"
 	"io"
+	"strings"
 )
 
 type JSONError struct {
@@ -29,4 +30,12 @@ func MapJSON(obj map[string]string) []*domain.Param {
 		result = append(result, &domain.Param{Type: k, Value: v})
 	}
 	return result
+}
+
+func SplitPic(pics string) []string {
+	buf := strings.Split(pics, ",")
+	for i := range buf {
+		buf[i] = Service + buf[i]
+	}
+	return buf
 }

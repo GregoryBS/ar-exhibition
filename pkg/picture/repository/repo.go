@@ -43,7 +43,7 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Pict
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image[:strings.Index(row.Image, ",")]
+		row.Image = utils.SplitPic(row.Image)[0]
 		result = append(result, row)
 	}
 	return result
@@ -64,7 +64,7 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image[:strings.Index(row.Image, ",")]
+		row.Image = utils.SplitPic(row.Image)[0]
 		result = append(result, row)
 	}
 	return result
@@ -78,11 +78,7 @@ func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
 	if err != nil {
 		return nil, err
 	}
-	buf := strings.Split(pic.Image, ",")
-	for i := range buf {
-		buf[i] = utils.Service + buf[i]
-	}
-	pic.Image = strings.Join(buf, ",")
+	pic.Image = strings.Join(utils.SplitPic(pic.Image), ",")
 	pic.Info = utils.MapJSON(params)
 	return pic, nil
 }
