@@ -40,9 +40,18 @@ func (h *ExhibitionHandler) GetExhibitions(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
 	museumID, err := strconv.Atoi(url.Get("museumID"))
 	if err != nil {
-		museumID = 0
+		page, err := strconv.Atoi(url.Get("page"))
+		if err != nil {
+			page = 1
+		}
+		size, err := strconv.Atoi(url.Get("size"))
+		if err != nil {
+			size = 10
+		}
+		exhibitionPage := h.u.GetExhibitions(page, size)
+		return ctx.JSON(exhibitionPage)
 	}
-	exhibitions := h.u.GetExhibitions(museumID)
+	exhibitions := h.u.GetExhibitionsByMuseum(museumID)
 	return ctx.JSON(exhibitions)
 }
 
