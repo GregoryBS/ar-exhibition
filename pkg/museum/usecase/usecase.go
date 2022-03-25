@@ -24,3 +24,7 @@ func (u *MuseumUsecase) GetMuseumTop() []*domain.Museum {
 func (u *MuseumUsecase) GetMuseumID(id int) (*domain.Museum, error) {
 	return u.repo.MuseumID(id)
 }
+
+func (u *MuseumUsecase) GetMuseums(page, size int) *domain.Page {
+	return u.repo.Museums(page, size)
+}

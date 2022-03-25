@@ -13,6 +13,8 @@ const (
 	from museum order by popular desc limit $1;`
 	querySelectOne = `select id, name, image, description, info, image_height, image_width
 	from museum where id = $1;`
+	querySelectByPage = `select id, name, image, image_height, image_width
+	from museum offset $1 limit $2;`
 )
 
 type MuseumRepository struct {
@@ -59,4 +61,25 @@ func (repo *MuseumRepository) MuseumID(id int) (*domain.Museum, error) {
 	museum.Image = utils.Service + museum.Image
 	museum.Info = utils.MapJSON(params)
 	return museum, nil
+}
+
+func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
+	offset, limit := (page-1)*size, size
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectByPage, offset, limit)
+	if err != nil {
+		return &domain.Page{Number: page, Size: size}
+	}
+	defer rows.Close()
+
+	result := make([]interface{}, 0)
+	for rows.Next() {
+		row := &domain.Museum{Sizes: &domain.ImageSize{}}
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		if err != nil {
+			return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
+		}
+		row.Image = utils.Service + row.Image
+		result = append(result, row)
+	}
+	return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 }
