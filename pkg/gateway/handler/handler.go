@@ -29,6 +29,8 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Get(utils.GatewayApiPictureID, h.GetPicture)
 		app.Get(utils.GatewayApiExhibitionID, h.GetExhibition)
 		app.Get(utils.GatewayApiMuseumID, h.GetMuseum)
+		app.Get(utils.GatewayApiMuseums, h.GetMuseums)
+		app.Get(utils.GatewayApiExhibitions, h.GetExhibitions)
 	}
 	return app
 }
@@ -81,4 +83,16 @@ func (h *GatewayHandler) GetMuseum(ctx aero.Context) error {
 		return ctx.JSON(msg)
 	}
 	return ctx.JSON(museum)
+}
+
+func (h *GatewayHandler) GetMuseums(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL
+	content := h.u.GetMuseums(url.RawQuery)
+	return ctx.JSON(content)
+}
+
+func (h *GatewayHandler) GetExhibitions(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL
+	content := h.u.GetExhibitions(url.RawQuery)
+	return ctx.JSON(content)
 }

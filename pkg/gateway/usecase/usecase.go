@@ -102,3 +102,27 @@ func (u *GatewayUsecase) GetMuseum(id int) (*domain.Museum, *domain.ErrorRespons
 	defer resp.Body.Close()
 	return museum, nil
 }
+
+func (u *GatewayUsecase) GetMuseums(params string) *domain.Page {
+	result := &domain.Page{}
+	resp, err := http.Get(utils.MuseumService + utils.BaseMuseumApi + "?" + params)
+	if err != nil {
+		return result
+	}
+	defer resp.Body.Close()
+
+	utils.DecodeJSON(resp.Body, result)
+	return result
+}
+
+func (u *GatewayUsecase) GetExhibitions(params string) *domain.Page {
+	result := &domain.Page{}
+	resp, err := http.Get(utils.ExhibitionService + utils.BaseExhibitionApi + "?" + params)
+	if err != nil {
+		return result
+	}
+	defer resp.Body.Close()
+
+	utils.DecodeJSON(resp.Body, result)
+	return result
+}
