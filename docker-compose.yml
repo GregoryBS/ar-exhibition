@@ -1,0 +1,61 @@
+version: "3"
+services:
+  database:
+    image: library/postgres:13
+    restart: on-failure
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./postgres/:/docker-entrypoint-initdb.d/
+
+  gateway:
+    build:
+      context: .
+      args:
+        service: gateway
+      dockerfile: Dockerfile
+    depends_on:
+      - museum
+      - exhibition
+      - picture
+    ports:
+      - 8080:8080
+
+  museum:
+    build:
+      context: .
+      args:
+        service: museum
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
+
+  exhibition:
+    build:
+      context: .
+      args:
+        service: exhibition
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
+
+  picture:
+    build:
+      context: .
+      args:
+        service: picture
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
+
+volumes:
+  db-data:
