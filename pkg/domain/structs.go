@@ -25,11 +25,11 @@ type Museum struct {
 	Exhibitions []*Exhibition `json:"exhibitions,omitempty"`
 }
 
-type MuseumPage struct {
-	Page  int       `json:"page,omitempty"`
-	Size  int       `json:"pageSize,omitempty"`
-	Total int       `json:"totalElements,omitempty"`
-	Items []*Museum `json:"items,omitempty"`
+type Page struct {
+	Number int           `json:"page"`
+	Size   int           `json:"pageSize"`
+	Total  int           `json:"totalElements"`
+	Items  []interface{} `json:"items,omitempty"`
 }
 
 type Picture struct {
