@@ -14,23 +14,30 @@ const (
 	GatewayApiMuseumID     = "/api/v1/museums/:id"
 	GatewayApiMuseums      = "/api/v1/museums"
 	GatewayApiExhibitions  = "/api/v1/exhibitions"
+	GatewayApiSearch       = "/api/v1/search"
 )
 
 const (
-	BaseMuseumApi = "/api/v1/museums"
-	MuseumTop     = BaseMuseumApi + "/top"
-	MuseumID      = BaseMuseumApi + "/:id"
+	BaseMuseumApi    = "/api/v1/museums"
+	MuseumTop        = BaseMuseumApi + "/top"
+	MuseumID         = BaseMuseumApi + "/:id"
+	BaseMuseumSearch = BaseMuseumApi + "/search"
+	MuseumSearch     = BaseMuseumSearch + "?name="
 )
 
 const (
-	BaseExhibitionApi  = "/api/v1/exhibitions"
-	ExhibitionTop      = BaseExhibitionApi + "/top"
-	ExhibitionID       = BaseExhibitionApi + "/:id"
-	ExhibitionByMuseum = BaseExhibitionApi + "?museumID="
+	BaseExhibitionApi    = "/api/v1/exhibitions"
+	ExhibitionTop        = BaseExhibitionApi + "/top"
+	ExhibitionID         = BaseExhibitionApi + "/:id"
+	ExhibitionByMuseum   = BaseExhibitionApi + "?museumID="
+	BaseExhibitionSearch = BaseExhibitionApi + "/search"
+	ExhibitionSearch     = BaseExhibitionSearch + "?name="
 )
 
 const (
 	BasePictureApi      = "/api/v1/pictures"
 	PictureID           = BasePictureApi + "/:id"
 	PictureByExhibition = BasePictureApi + "?exhibitionID="
+	BasePictureSearch   = BasePictureApi + "/search"
+	PictureSearch       = BasePictureSearch + "?name="
 )
