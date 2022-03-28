@@ -16,7 +16,7 @@ const (
 	querySelectOne = `select id, name, image, description, info
 	from picture where id = $1;`
 	querySelectSearch = `select  id, name, image, height, width 
-	from picture where name like '%$1%';`
+	from picture where lower(name) like $1;`
 )
 
 type PictureRepository struct {
@@ -87,7 +87,7 @@ func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
 
 func (repo *PictureRepository) Search(name string) []*domain.Picture {
 	result := make([]*domain.Picture, 0)
-	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, name)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, "%"+name+"%")
 	if err != nil {
 		return result
 	}

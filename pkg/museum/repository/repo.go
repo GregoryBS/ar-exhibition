@@ -16,7 +16,7 @@ const (
 	querySelectByPage = `select id, name, image, image_height, image_width
 	from museum offset $1 limit $2;`
 	querySelectSearch = `select id, name, image, image_height, image_width
-	from museum where name like '%$1%';`
+	from museum where lower(name) like $1;`
 )
 
 type MuseumRepository struct {
@@ -88,7 +88,7 @@ func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
 
 func (repo *MuseumRepository) Search(name string) []*domain.Museum {
 	result := make([]*domain.Museum, 0)
-	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, name)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, "%"+name+"%")
 	if err != nil {
 		return result
 	}

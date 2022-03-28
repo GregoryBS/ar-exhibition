@@ -18,7 +18,7 @@ const (
 	querySelectByMuseum = `select id, name, image, image_height, image_width
 	from exhibition where museum_id = $1;`
 	querySelectSearch = `select id, name, image, image_height, image_width
-	from exhibition where name like '%$1%';`
+	from exhibition where lower(name) like $1;`
 )
 
 type ExhibitionRepository struct {
@@ -110,7 +110,7 @@ func (repo *ExhibitionRepository) AllExhibitions(page, size int) *domain.Page {
 
 func (repo *ExhibitionRepository) Search(name string) []*domain.Exhibition {
 	result := make([]*domain.Exhibition, 0)
-	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, name)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, "%"+name+"%")
 	if err != nil {
 		return result
 	}
