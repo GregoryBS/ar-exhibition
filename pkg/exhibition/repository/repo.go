@@ -17,6 +17,8 @@ const (
 	from exhibition offset $1 limit $2;`
 	querySelectByMuseum = `select id, name, image, image_height, image_width
 	from exhibition where museum_id = $1;`
+	querySelectSearch = `select id, name, image, image_height, image_width
+	from exhibition where name like '%$1%';`
 )
 
 type ExhibitionRepository struct {
@@ -104,4 +106,24 @@ func (repo *ExhibitionRepository) AllExhibitions(page, size int) *domain.Page {
 		result = append(result, row)
 	}
 	return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
+}
+
+func (repo *ExhibitionRepository) Search(name string) []*domain.Exhibition {
+	result := make([]*domain.Exhibition, 0)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, name)
+	if err != nil {
+		return result
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		row := &domain.Exhibition{Sizes: &domain.ImageSize{}}
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		if err != nil {
+			return result
+		}
+		row.Image = utils.Service + row.Image
+		result = append(result, row)
+	}
+	return result
 }

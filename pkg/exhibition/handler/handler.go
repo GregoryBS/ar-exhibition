@@ -27,6 +27,7 @@ func ConfigureExhibition(app *aero.Application, handlers interface{}) *aero.Appl
 		app.Get(utils.ExhibitionTop, h.GetExhibitionTop)
 		app.Get(utils.BaseExhibitionApi, h.GetExhibitions)
 		app.Get(utils.ExhibitionID, h.GetExhibitionID)
+		app.Get(utils.BaseExhibitionSearch, h.Search)
 	}
 	return app
 }
@@ -63,4 +64,10 @@ func (h *ExhibitionHandler) GetExhibitionID(ctx aero.Context) error {
 		return ctx.JSON(nil)
 	}
 	return ctx.JSON(exhibition)
+}
+
+func (h *ExhibitionHandler) Search(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL.Query()
+	content := h.u.Search(url.Get("name"))
+	return ctx.JSON(content)
 }

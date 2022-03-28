@@ -36,3 +36,7 @@ func (u *ExhibitionUsecase) GetExhibitionID(id int) (*domain.Exhibition, error) 
 func (u *ExhibitionUsecase) GetExhibitions(page, size int) *domain.Page {
 	return u.repo.AllExhibitions(page, size)
 }
+
+func (u *ExhibitionUsecase) Search(name string) []*domain.Exhibition {
+	return u.repo.Search(name)
+}
