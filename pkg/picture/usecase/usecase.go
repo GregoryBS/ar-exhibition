@@ -28,3 +28,7 @@ func (u *PictureUsecase) GetPictures(exhibition int) []*domain.Picture {
 func (u *PictureUsecase) GetPictureID(id int) (*domain.Picture, error) {
 	return u.repo.PictureID(id)
 }
+
+func (u *PictureUsecase) Search(name string) []*domain.Picture {
+	return u.repo.Search(name)
+}

@@ -26,6 +26,7 @@ func ConfigurePicture(app *aero.Application, handlers interface{}) *aero.Applica
 	if ok {
 		app.Get(utils.BasePictureApi, h.GetPictures)
 		app.Get(utils.PictureID, h.GetPictureID)
+		app.Get(utils.BasePictureSearch, h.Search)
 	}
 	return app
 }
@@ -48,4 +49,10 @@ func (h *PictureHandler) GetPictureID(ctx aero.Context) error {
 		return ctx.JSON(nil)
 	}
 	return ctx.JSON(picture)
+}
+
+func (h *PictureHandler) Search(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL.Query()
+	content := h.u.Search(url.Get("name"))
+	return ctx.JSON(content)
 }
