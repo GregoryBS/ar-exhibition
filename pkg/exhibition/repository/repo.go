@@ -18,7 +18,7 @@ const (
 	querySelectByMuseum = `select id, name, image, image_height, image_width
 	from exhibition where museum_id = $1;`
 	querySelectSearch = `select id, name, image, image_height, image_width
-	from exhibition where lower(name) like $1;`
+	from exhibition where lower(name) like lower($1);`
 )
 
 type ExhibitionRepository struct {

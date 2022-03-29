@@ -16,7 +16,7 @@ const (
 	querySelectOne = `select id, name, image, description, info
 	from picture where id = $1;`
 	querySelectSearch = `select  id, name, image, height, width 
-	from picture where lower(name) like $1;`
+	from picture where lower(name) like lower($1);`
 )
 
 type PictureRepository struct {
@@ -99,7 +99,7 @@ func (repo *PictureRepository) Search(name string) []*domain.Picture {
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.SplitPic(row.Image)[0]
 		result = append(result, row)
 	}
 	return result

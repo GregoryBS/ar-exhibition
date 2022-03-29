@@ -16,7 +16,7 @@ const (
 	querySelectByPage = `select id, name, image, image_height, image_width
 	from museum offset $1 limit $2;`
 	querySelectSearch = `select id, name, image, image_height, image_width
-	from museum where lower(name) like $1;`
+	from museum where lower(name) like lower($1);`
 )
 
 type MuseumRepository struct {
