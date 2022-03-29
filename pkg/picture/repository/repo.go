@@ -17,6 +17,8 @@ const (
 	from picture where id = $1;`
 	querySelectSearch = `select  id, name, image, height, width 
 	from picture where lower(name) like lower($1);`
+	querySelectSearchID = `select  id, name, image, height, width 
+	from picture where lower(name) like lower($1) and exh_id = $2;`
 )
 
 type PictureRepository struct {
@@ -88,6 +90,26 @@ func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
 func (repo *PictureRepository) Search(name string) []*domain.Picture {
 	result := make([]*domain.Picture, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, "%"+name+"%")
+	if err != nil {
+		return result
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		row := &domain.Picture{Sizes: &domain.ImageSize{}}
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		if err != nil {
+			return result
+		}
+		row.Image = utils.SplitPic(row.Image)[0]
+		result = append(result, row)
+	}
+	return result
+}
+
+func (repo *PictureRepository) SearchID(name string, exhibitionID int) []*domain.Picture {
+	result := make([]*domain.Picture, 0)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearchID, "%"+name+"%", exhibitionID)
 	if err != nil {
 		return result
 	}

@@ -32,3 +32,7 @@ func (u *PictureUsecase) GetPictureID(id int) (*domain.Picture, error) {
 func (u *PictureUsecase) Search(name string) []*domain.Picture {
 	return u.repo.Search(name)
 }
+
+func (u *PictureUsecase) SearchID(name string, exhibitionID int) []*domain.Picture {
+	return u.repo.SearchID(name, exhibitionID)
+}
