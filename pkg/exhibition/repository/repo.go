@@ -19,6 +19,8 @@ const (
 	from exhibition where museum_id = $1;`
 	querySelectSearch = `select id, name, image, image_height, image_width
 	from exhibition where lower(name) like lower($1);`
+	querySelectSearchID = `select id, name, image, image_height, image_width
+	from exhibition where lower(name) like lower($1) and museum_id = $2;`
 )
 
 type ExhibitionRepository struct {
@@ -111,6 +113,26 @@ func (repo *ExhibitionRepository) AllExhibitions(page, size int) *domain.Page {
 func (repo *ExhibitionRepository) Search(name string) []*domain.Exhibition {
 	result := make([]*domain.Exhibition, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, "%"+name+"%")
+	if err != nil {
+		return result
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		row := &domain.Exhibition{Sizes: &domain.ImageSize{}}
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		if err != nil {
+			return result
+		}
+		row.Image = utils.Service + row.Image
+		result = append(result, row)
+	}
+	return result
+}
+
+func (repo *ExhibitionRepository) SearchID(name string, museumID int) []*domain.Exhibition {
+	result := make([]*domain.Exhibition, 0)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearchID, "%"+name+"%", museumID)
 	if err != nil {
 		return result
 	}

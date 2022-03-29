@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/exhibition/usecase"
 	"ar_exhibition/pkg/utils"
 	"net/http"
@@ -67,7 +68,13 @@ func (h *ExhibitionHandler) GetExhibitionID(ctx aero.Context) error {
 }
 
 func (h *ExhibitionHandler) Search(ctx aero.Context) error {
+	var content []*domain.Exhibition
 	url := ctx.Request().Internal().URL.Query()
-	content := h.u.Search(url.Get("name"))
+	name := url.Get("name")
+	if id, err := strconv.Atoi(url.Get("id")); err == nil {
+		content = h.u.SearchID(name, id)
+	} else {
+		content = h.u.Search(name)
+	}
 	return ctx.JSON(content)
 }

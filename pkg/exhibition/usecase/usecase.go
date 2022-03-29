@@ -40,3 +40,7 @@ func (u *ExhibitionUsecase) GetExhibitions(page, size int) *domain.Page {
 func (u *ExhibitionUsecase) Search(name string) []*domain.Exhibition {
 	return u.repo.Search(name)
 }
+
+func (u *ExhibitionUsecase) SearchID(name string, museumID int) []*domain.Exhibition {
+	return u.repo.SearchID(name, museumID)
+}
