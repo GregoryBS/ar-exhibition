@@ -153,3 +153,33 @@ func (u *GatewayUsecase) Search(params string) *domain.SearchPage {
 	utils.DecodeJSON(resp.Body, &pictures)
 	return &domain.SearchPage{Museums: museums, Exhibitions: exhibitions, Pictures: pictures}
 }
+
+func (u *GatewayUsecase) SearchByID(name, param string, id int) *domain.SearchPage {
+	var resp *http.Response
+	var err error
+	switch param {
+	case "museum":
+		resp, err = http.Get(utils.ExhibitionService + fmt.Sprintf(utils.ExhibitionSearchID, name, id))
+	case "exhibition":
+		resp, err = http.Get(utils.PictureService + fmt.Sprintf(utils.PictureSearchID, name, id))
+	default:
+		return nil
+	}
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+
+	switch param {
+	case "museum":
+		result := make([]*domain.Exhibition, 0)
+		utils.DecodeJSON(resp.Body, &result)
+		return &domain.SearchPage{Exhibitions: result}
+	case "exhibition":
+		result := make([]*domain.Picture, 0)
+		utils.DecodeJSON(resp.Body, &result)
+		return &domain.SearchPage{Pictures: result}
+	default:
+		return nil
+	}
+}

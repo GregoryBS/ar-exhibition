@@ -32,6 +32,7 @@ const (
 	ExhibitionByMuseum   = BaseExhibitionApi + "?museumID="
 	BaseExhibitionSearch = BaseExhibitionApi + "/search"
 	ExhibitionSearch     = BaseExhibitionSearch + "?name="
+	ExhibitionSearchID   = BaseExhibitionSearch + "?name=%s&id=%d"
 )
 
 const (
@@ -40,4 +41,5 @@ const (
 	PictureByExhibition = BasePictureApi + "?exhibitionID="
 	BasePictureSearch   = BasePictureApi + "/search"
 	PictureSearch       = BasePictureSearch + "?name="
+	PictureSearchID     = BasePictureSearch + "?name=%s&id=%d"
 )

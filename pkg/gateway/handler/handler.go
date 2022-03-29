@@ -100,7 +100,17 @@ func (h *GatewayHandler) GetExhibitions(ctx aero.Context) error {
 
 func (h *GatewayHandler) Search(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
-	content := h.u.Search(url.Get("name"))
+	name := url.Get("name")
+	if id, err := strconv.Atoi(url.Get("id")); err == nil {
+		result := h.u.SearchByID(name, url.Get("type"), id)
+		if result == nil {
+			ctx.SetStatus(http.StatusNotFound)
+			return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
+		}
+		return ctx.JSON(result)
+	}
+
+	content := h.u.Search(name)
 	if content == nil {
 		ctx.SetStatus(http.StatusNotFound)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
