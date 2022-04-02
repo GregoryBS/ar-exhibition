@@ -13,7 +13,7 @@ const (
 	querySelectAll   = `select id, name, image, height, width from picture;`
 	querySelectByExh = `select id, name, image, height, width, video, video_size
 	from picture where exh_id = $1;`
-	querySelectOne = `select id, name, image, description, info
+	querySelectOne = `select id, name, image, description, info, height, width
 	from picture where id = $1;`
 	querySelectSearch = `select  id, name, image, height, width 
 	from picture where lower(name) like lower($1);`
@@ -78,10 +78,10 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 }
 
 func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
-	pic := &domain.Picture{}
+	pic := &domain.Picture{Sizes: &domain.ImageSize{}}
 	params := make(map[string]string, 0)
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
-	err := row.Scan(&pic.ID, &pic.Name, &pic.Image, &pic.Description, &params)
+	err := row.Scan(&pic.ID, &pic.Name, &pic.Image, &pic.Description, &params, &pic.Sizes.Height, &pic.Sizes.Width)
 	if err != nil {
 		return nil, err
 	}
