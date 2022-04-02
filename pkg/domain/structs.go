@@ -34,6 +34,8 @@ type Picture struct {
 	Sizes       *ImageSize `json:"pictureSize,omitempty"`
 	Description string     `json:"descr,omitempty"`
 	Info        []*Param   `json:"info,omitempty"`
+	Video       string     `json:"video,omitempty"`
+	VideoSize   string     `json:"videoSize,omitempty"`
 }
 
 type Exhibition struct {

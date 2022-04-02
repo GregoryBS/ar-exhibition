@@ -35,7 +35,7 @@ func MapJSON(obj map[string]string) []*domain.Param {
 func SplitPic(pics string) []string {
 	buf := strings.Split(pics, ",")
 	for i := range buf {
-		buf[i] = Service + buf[i]
+		buf[i] = ImageService + buf[i]
 	}
 	return buf
 }

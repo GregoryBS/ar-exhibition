@@ -4,7 +4,8 @@ const (
 	MuseumService     = "http://museum:8080"
 	ExhibitionService = "http://exhibition:8080"
 	PictureService    = "http://picture:8080"
-	Service           = "http://95.163.213.222/"
+	ImageService      = "http://95.163.213.222/images/"
+	VideoService      = "http://95.163.213.222/videos/"
 )
 
 const (

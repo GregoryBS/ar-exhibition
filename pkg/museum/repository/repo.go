@@ -46,7 +46,7 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.ImageService + row.Image
 		result = append(result, row)
 	}
 	return result
@@ -60,7 +60,7 @@ func (repo *MuseumRepository) MuseumID(id int) (*domain.Museum, error) {
 	if err != nil {
 		return nil, err
 	}
-	museum.Image = utils.Service + museum.Image
+	museum.Image = utils.ImageService + museum.Image
 	museum.Info = utils.MapJSON(params)
 	return museum, nil
 }
@@ -80,7 +80,7 @@ func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
 		if err != nil {
 			return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.ImageService + row.Image
 		result = append(result, row)
 	}
 	return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
@@ -100,7 +100,7 @@ func (repo *MuseumRepository) Search(name string) []*domain.Museum {
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.ImageService + row.Image
 		result = append(result, row)
 	}
 	return result

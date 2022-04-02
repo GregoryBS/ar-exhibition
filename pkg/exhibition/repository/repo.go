@@ -50,7 +50,7 @@ func (repo *ExhibitionRepository) ExhibitionTop(limit int) []*domain.Exhibition 
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.ImageService + row.Image
 		result = append(result, row)
 	}
 	return result
@@ -64,7 +64,7 @@ func (repo *ExhibitionRepository) ExhibitionID(id int) (*domain.Exhibition, erro
 	if err != nil {
 		return nil, err
 	}
-	exh.Image = utils.Service + exh.Image
+	exh.Image = utils.ImageService + exh.Image
 	exh.Info = utils.MapJSON(params)
 	return exh, nil
 }
@@ -83,7 +83,7 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int) []*domain.Exhib
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.ImageService + row.Image
 		result = append(result, row)
 	}
 	return result
@@ -104,7 +104,7 @@ func (repo *ExhibitionRepository) AllExhibitions(page, size int) *domain.Page {
 		if err != nil {
 			return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.ImageService + row.Image
 		result = append(result, row)
 	}
 	return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
@@ -124,7 +124,7 @@ func (repo *ExhibitionRepository) Search(name string) []*domain.Exhibition {
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.ImageService + row.Image
 		result = append(result, row)
 	}
 	return result
@@ -144,7 +144,7 @@ func (repo *ExhibitionRepository) SearchID(name string, museumID int) []*domain.
 		if err != nil {
 			return result
 		}
-		row.Image = utils.Service + row.Image
+		row.Image = utils.ImageService + row.Image
 		result = append(result, row)
 	}
 	return result

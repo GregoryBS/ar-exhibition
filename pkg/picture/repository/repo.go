@@ -11,7 +11,7 @@ import (
 
 const (
 	querySelectAll   = `select id, name, image, height, width from picture;`
-	querySelectByExh = `select id, name, image, height, width
+	querySelectByExh = `select id, name, image, height, width, video, video_size
 	from picture where exh_id = $1;`
 	querySelectOne = `select id, name, image, description, info
 	from picture where id = $1;`
@@ -43,11 +43,12 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Pict
 
 	for rows.Next() {
 		row := &domain.Picture{Sizes: &domain.ImageSize{}}
-		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width, &row.Video, &row.VideoSize)
 		if err != nil {
 			return result
 		}
 		row.Image = utils.SplitPic(row.Image)[0]
+		row.Video = utils.VideoService + row.Video
 		result = append(result, row)
 	}
 	return result
