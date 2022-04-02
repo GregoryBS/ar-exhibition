@@ -48,7 +48,9 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Pict
 			return result
 		}
 		row.Image = utils.SplitPic(row.Image)[0]
-		row.Video = utils.VideoService + row.Video
+		if row.Video != "" {
+			row.Video = utils.VideoService + row.Video
+		}
 		result = append(result, row)
 	}
 	return result
