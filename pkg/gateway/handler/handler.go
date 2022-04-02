@@ -32,6 +32,7 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Get(utils.GatewayApiMuseums, h.GetMuseums)
 		app.Get(utils.GatewayApiExhibitions, h.GetExhibitions)
 		app.Get(utils.GatewayApiSearch, h.Search)
+		app.Get(utils.GatewayApiExhPictures, h.GetPicturesExh)
 	}
 	return app
 }
@@ -116,4 +117,14 @@ func (h *GatewayHandler) Search(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
 	}
 	return ctx.JSON(content)
+}
+
+func (h *GatewayHandler) GetPicturesExh(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL.Query()
+	pictures := h.u.GetPicturesExh(url.Get("exhibitionID"))
+	if pictures == nil {
+		ctx.SetStatus(http.StatusNotFound)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
+	}
+	return ctx.JSON(pictures)
 }

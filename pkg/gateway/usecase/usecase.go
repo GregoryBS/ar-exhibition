@@ -183,3 +183,15 @@ func (u *GatewayUsecase) SearchByID(name, param string, id int) *domain.SearchPa
 		return nil
 	}
 }
+
+func (u *GatewayUsecase) GetPicturesExh(id string) []*domain.Picture {
+	resp, err := http.Get(utils.PictureService + utils.PictureByExhibition + id)
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+
+	result := make([]*domain.Picture, 0)
+	utils.DecodeJSON(resp.Body, &result)
+	return result
+}
