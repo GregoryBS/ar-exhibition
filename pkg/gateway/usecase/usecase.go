@@ -133,7 +133,7 @@ func (u *GatewayUsecase) Search(param, params string) *domain.SearchPage {
 	pictures := make([]*domain.Picture, 0)
 	switch param {
 	case "museum":
-		resp, err := http.Get(utils.MuseumService + utils.MuseumSearch + params)
+		resp, err := http.Get(utils.MuseumService + utils.BaseMuseumSearch + "?" + params)
 		if err != nil {
 			return nil
 		}
@@ -141,7 +141,7 @@ func (u *GatewayUsecase) Search(param, params string) *domain.SearchPage {
 		utils.DecodeJSON(resp.Body, &museums)
 		return &domain.SearchPage{Museums: museums}
 	case "exhibition":
-		resp, err := http.Get(utils.ExhibitionService + utils.ExhibitionSearch + params)
+		resp, err := http.Get(utils.ExhibitionService + utils.BaseExhibitionSearch + "?" + params)
 		if err != nil {
 			return nil
 		}
@@ -149,7 +149,7 @@ func (u *GatewayUsecase) Search(param, params string) *domain.SearchPage {
 		utils.DecodeJSON(resp.Body, &exhibitions)
 		return &domain.SearchPage{Exhibitions: exhibitions}
 	case "picture":
-		resp, err := http.Get(utils.PictureService + utils.PictureSearch + params)
+		resp, err := http.Get(utils.PictureService + utils.BasePictureSearch + "?" + params)
 		if err != nil {
 			return nil
 		}
@@ -157,21 +157,21 @@ func (u *GatewayUsecase) Search(param, params string) *domain.SearchPage {
 		utils.DecodeJSON(resp.Body, &pictures)
 		return &domain.SearchPage{Pictures: pictures}
 	}
-	resp, err := http.Get(utils.MuseumService + utils.MuseumSearch + params)
+	resp, err := http.Get(utils.MuseumService + utils.BaseMuseumSearch + "?" + params)
 	if err != nil {
 		return nil
 	}
 	utils.DecodeJSON(resp.Body, &museums)
 	resp.Body.Close()
 
-	resp, err = http.Get(utils.ExhibitionService + utils.ExhibitionSearch + params)
+	resp, err = http.Get(utils.ExhibitionService + utils.BaseExhibitionSearch + "?" + params)
 	if err != nil {
 		return &domain.SearchPage{Museums: museums}
 	}
 	utils.DecodeJSON(resp.Body, &exhibitions)
 	resp.Body.Close()
 
-	resp, err = http.Get(utils.PictureService + utils.PictureSearch + params)
+	resp, err = http.Get(utils.PictureService + utils.BasePictureSearch + "?" + params)
 	if err != nil {
 		return &domain.SearchPage{Museums: museums, Exhibitions: exhibitions}
 	}
