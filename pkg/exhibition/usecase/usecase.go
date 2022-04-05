@@ -21,10 +21,10 @@ func (u *ExhibitionUsecase) GetExhibitionTop() []*domain.Exhibition {
 	return u.repo.ExhibitionTop(5)
 }
 
-func (u *ExhibitionUsecase) GetExhibitionsByMuseum(museum int) []*domain.Exhibition {
+func (u *ExhibitionUsecase) GetExhibitionsByMuseum(museum int, filter string) []*domain.Exhibition {
 	result := make([]*domain.Exhibition, 0)
 	if museum > 0 {
-		return u.repo.ExhibitionByMuseum(museum)
+		return u.repo.ExhibitionByMuseum(museum, filter)
 	}
 	return result
 }
@@ -33,8 +33,8 @@ func (u *ExhibitionUsecase) GetExhibitionID(id int) (*domain.Exhibition, error) 
 	return u.repo.ExhibitionID(id)
 }
 
-func (u *ExhibitionUsecase) GetExhibitions(page, size int) *domain.Page {
-	return u.repo.AllExhibitions(page, size)
+func (u *ExhibitionUsecase) GetExhibitions(page, size int, filter string) *domain.Page {
+	return u.repo.AllExhibitions(page, size, filter)
 }
 
 func (u *ExhibitionUsecase) Search(name string) []*domain.Exhibition {

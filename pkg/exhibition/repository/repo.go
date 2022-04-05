@@ -6,6 +6,7 @@ import (
 	"ar_exhibition/pkg/utils"
 	"context"
 	"fmt"
+	"time"
 )
 
 const (
@@ -15,12 +16,16 @@ const (
 	from exhibition where id = $1;`
 	querySelectAll = `select id, name, image, image_height, image_width
 	from exhibition offset $1 limit $2;`
-	querySelectByMuseum = `select id, name, image, image_height, image_width
+	querySelectByMuseum = `select id, name, image, image_height, image_width, info
 	from exhibition where museum_id = $1;`
 	querySelectSearch = `select id, name, image, image_height, image_width
 	from exhibition where lower(name) like lower($1);`
 	querySelectSearchID = `select id, name, image, image_height, image_width
 	from exhibition where lower(name) like lower($1) and museum_id = $2;`
+)
+
+const (
+	timeLayout = "2006-01-02"
 )
 
 type ExhibitionRepository struct {
@@ -69,7 +74,7 @@ func (repo *ExhibitionRepository) ExhibitionID(id int) (*domain.Exhibition, erro
 	return exh, nil
 }
 
-func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int) []*domain.Exhibition {
+func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int, filter string) []*domain.Exhibition {
 	result := make([]*domain.Exhibition, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectByMuseum, museum)
 	if err != nil {
@@ -79,17 +84,34 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int) []*domain.Exhib
 
 	for rows.Next() {
 		row := &domain.Exhibition{Sizes: &domain.ImageSize{}}
-		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		params := make(map[string]string, 0)
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width, &params)
 		if err != nil {
 			return result
 		}
 		row.Image = utils.ImageService + row.Image
-		result = append(result, row)
+		from, _ := time.Parse(timeLayout, params["Начало"])
+		to, _ := time.Parse(timeLayout, params["Конец"])
+		switch filter {
+		case "all":
+			result = append(result, row)
+		case "now":
+			t := time.Now()
+			if t.Before(to) && t.After(from) {
+				result = append(result, row)
+			}
+		case "old":
+			if time.Now().After(to) {
+				result = append(result, row)
+			}
+		default:
+			result = append(result, row)
+		}
 	}
 	return result
 }
 
-func (repo *ExhibitionRepository) AllExhibitions(page, size int) *domain.Page {
+func (repo *ExhibitionRepository) AllExhibitions(page, size int, filter string) *domain.Page {
 	offset, limit := (page-1)*size, size
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectAll, offset, limit)
 	if err != nil {
@@ -100,12 +122,29 @@ func (repo *ExhibitionRepository) AllExhibitions(page, size int) *domain.Page {
 	result := make([]interface{}, 0)
 	for rows.Next() {
 		row := &domain.Exhibition{Sizes: &domain.ImageSize{}}
-		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		params := make(map[string]string, 0)
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width, &params)
 		if err != nil {
 			return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 		}
 		row.Image = utils.ImageService + row.Image
-		result = append(result, row)
+		from, _ := time.Parse(timeLayout, params["Начало"])
+		to, _ := time.Parse(timeLayout, params["Конец"])
+		switch filter {
+		case "all":
+			result = append(result, row)
+		case "now":
+			t := time.Now()
+			if t.Before(to) && t.After(from) {
+				result = append(result, row)
+			}
+		case "old":
+			if time.Now().After(to) {
+				result = append(result, row)
+			}
+		default:
+			result = append(result, row)
+		}
 	}
 	return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 }
