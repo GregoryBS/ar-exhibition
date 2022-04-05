@@ -71,11 +71,12 @@ func (h *ExhibitionHandler) GetExhibitionID(ctx aero.Context) error {
 func (h *ExhibitionHandler) Search(ctx aero.Context) error {
 	var content []*domain.Exhibition
 	url := ctx.Request().Internal().URL.Query()
+	filter := url.Get("filter")
 	name := url.Get("name")
 	if id, err := strconv.Atoi(url.Get("id")); err == nil {
 		content = h.u.SearchID(name, id)
 	} else {
-		content = h.u.Search(name)
+		content = h.u.Search(name, filter)
 	}
 	return ctx.JSON(content)
 }

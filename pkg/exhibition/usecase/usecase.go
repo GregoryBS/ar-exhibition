@@ -37,8 +37,8 @@ func (u *ExhibitionUsecase) GetExhibitions(page, size int, filter string) *domai
 	return u.repo.AllExhibitions(page, size, filter)
 }
 
-func (u *ExhibitionUsecase) Search(name string) []*domain.Exhibition {
-	return u.repo.Search(name)
+func (u *ExhibitionUsecase) Search(name, filter string) []*domain.Exhibition {
+	return u.repo.Search(name, filter)
 }
 
 func (u *ExhibitionUsecase) SearchID(name string, museumID int) []*domain.Exhibition {

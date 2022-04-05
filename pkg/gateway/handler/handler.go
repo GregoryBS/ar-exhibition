@@ -104,18 +104,16 @@ func (h *GatewayHandler) GetExhibitions(ctx aero.Context) error {
 }
 
 func (h *GatewayHandler) Search(ctx aero.Context) error {
-	url := ctx.Request().Internal().URL.Query()
-	name := url.Get("name")
-	if id, err := strconv.Atoi(url.Get("id")); err == nil {
-		result := h.u.SearchByID(name, url.Get("type"), id)
+	url := ctx.Request().Internal().URL
+	if url.Query().Has("id") {
+		result := h.u.SearchByID(url.Query().Get("type"), url.RawQuery)
 		if result == nil {
 			ctx.SetStatus(http.StatusNotFound)
 			return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
 		}
 		return ctx.JSON(result)
 	}
-
-	content := h.u.Search(name)
+	content := h.u.Search(url.Query().Get("type"), url.RawQuery)
 	if content == nil {
 		ctx.SetStatus(http.StatusNotFound)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
