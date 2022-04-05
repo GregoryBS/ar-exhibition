@@ -41,6 +41,6 @@ func (u *ExhibitionUsecase) Search(name, filter string) []*domain.Exhibition {
 	return u.repo.Search(name, filter)
 }
 
-func (u *ExhibitionUsecase) SearchID(name string, museumID int) []*domain.Exhibition {
-	return u.repo.SearchID(name, museumID)
+func (u *ExhibitionUsecase) SearchID(name string, museumID int, filter string) []*domain.Exhibition {
+	return u.repo.SearchID(name, museumID, filter)
 }

@@ -74,7 +74,7 @@ func (h *ExhibitionHandler) Search(ctx aero.Context) error {
 	filter := url.Get("filter")
 	name := url.Get("name")
 	if id, err := strconv.Atoi(url.Get("id")); err == nil {
-		content = h.u.SearchID(name, id)
+		content = h.u.SearchID(name, id, filter)
 	} else {
 		content = h.u.Search(name, filter)
 	}

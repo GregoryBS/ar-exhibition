@@ -184,9 +184,9 @@ func (u *GatewayUsecase) SearchByID(param, params string) *domain.SearchPage {
 	var resp *http.Response
 	var err error
 	switch param {
-	case "museum":
-		resp, err = http.Get(utils.ExhibitionService + utils.BaseExhibitionSearch + "?" + params)
 	case "exhibition":
+		resp, err = http.Get(utils.ExhibitionService + utils.BaseExhibitionSearch + "?" + params)
+	case "picture":
 		resp, err = http.Get(utils.PictureService + utils.BasePictureSearch + "?" + params)
 	default:
 		return nil
@@ -197,11 +197,11 @@ func (u *GatewayUsecase) SearchByID(param, params string) *domain.SearchPage {
 	defer resp.Body.Close()
 
 	switch param {
-	case "museum":
+	case "exhibition":
 		result := make([]*domain.Exhibition, 0)
 		utils.DecodeJSON(resp.Body, &result)
 		return &domain.SearchPage{Exhibitions: result}
-	case "exhibition":
+	case "picture":
 		result := make([]*domain.Picture, 0)
 		utils.DecodeJSON(resp.Body, &result)
 		return &domain.SearchPage{Pictures: result}
