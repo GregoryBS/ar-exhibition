@@ -4,7 +4,11 @@ WORKDIR /app
 
 ARG service
 COPY cmd/$service/main.go main.go
-COPY pkg/ pkg/
+COPY pkg/database/ pkg/database/
+COPY pkg/server/ pkg/server/
+COPY pkg/domain/ pkg/domain/
+COPY pkg/utils/ pkg/utils/
+COPY pkg/$service/ pkg/$service/
 COPY go.mod go.mod
 
 RUN go mod tidy
