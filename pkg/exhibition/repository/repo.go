@@ -14,7 +14,7 @@ const (
 	from exhibition order by popular desc limit $1;`
 	querySelectOne = `select id, name, image, description, info, image_height, image_width
 	from exhibition where id = $1;`
-	querySelectAll = `select id, name, image, image_height, image_width
+	querySelectAll = `select id, name, image, image_height, image_width, info
 	from exhibition offset $1 limit $2;`
 	querySelectByMuseum = `select id, name, image, image_height, image_width, info
 	from exhibition where museum_id = $1;`
@@ -89,9 +89,11 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int, filter string) 
 		if err != nil {
 			return result
 		}
+		fmt.Println(params)
 		row.Image = utils.ImageService + row.Image
 		from, _ := time.Parse(timeLayout, params["Начало"])
 		to, _ := time.Parse(timeLayout, params["Конец"])
+		fmt.Println(from, to)
 		switch filter {
 		case "all":
 			result = append(result, row)
@@ -108,6 +110,7 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int, filter string) 
 			result = append(result, row)
 		}
 	}
+	fmt.Println(result)
 	return result
 }
 
