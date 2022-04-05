@@ -17,7 +17,7 @@ func PictureUsecases(repo interface{}) interface{} {
 	return nil
 }
 
-func (u *PictureUsecase) GetPictures(exhibition int) []*domain.Picture {
+func (u *PictureUsecase) GetPicturesByExh(exhibition int) []*domain.Picture {
 	if exhibition > 0 {
 		return u.repo.ExhibitionPictures(exhibition)
 	} else {
@@ -35,4 +35,14 @@ func (u *PictureUsecase) Search(name string) []*domain.Picture {
 
 func (u *PictureUsecase) SearchID(name string, exhibitionID int) []*domain.Picture {
 	return u.repo.SearchID(name, exhibitionID)
+}
+
+func (u *PictureUsecase) GetPicturesByIDs(id []int) []*domain.Picture {
+	result := make([]*domain.Picture, 0)
+	for i := range id {
+		if pic, err := u.GetPictureID(id[i]); err == nil {
+			result = append(result, pic)
+		}
+	}
+	return result
 }

@@ -6,6 +6,7 @@ import (
 	"ar_exhibition/pkg/utils"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/aerogo/aero"
 )
@@ -34,11 +35,22 @@ func ConfigurePicture(app *aero.Application, handlers interface{}) *aero.Applica
 
 func (h *PictureHandler) GetPictures(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
-	exhibitionID, err := strconv.Atoi(url.Get("exhibitionID"))
-	if err != nil {
-		exhibitionID = 0
+	var pictures []*domain.Picture
+	ids := url.Get("id")
+	if ids == "" {
+		exhibitionID, err := strconv.Atoi(url.Get("exhibitionID"))
+		if err != nil {
+			exhibitionID = 0
+		}
+		pictures = h.u.GetPicturesByExh(exhibitionID)
+	} else {
+		id := make([]int, 0)
+		for _, str := range strings.Split(ids, ",") {
+			num, _ := strconv.Atoi(str)
+			id = append(id, num)
+		}
+		pictures = h.u.GetPicturesByIDs(id)
 	}
-	pictures := h.u.GetPictures(exhibitionID)
 	return ctx.JSON(pictures)
 }
 
