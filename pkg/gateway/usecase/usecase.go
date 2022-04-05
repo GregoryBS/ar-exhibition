@@ -8,10 +8,6 @@ import (
 	"strings"
 )
 
-const (
-	timeLayout = "2006-01-02"
-)
-
 type GatewayUsecase struct {
 }
 
@@ -186,6 +182,18 @@ func (u *GatewayUsecase) SearchByID(name, param string, id int) *domain.SearchPa
 
 func (u *GatewayUsecase) GetPicturesExh(id string) []*domain.Picture {
 	resp, err := http.Get(utils.PictureService + utils.PictureByExhibition + id)
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+
+	result := make([]*domain.Picture, 0)
+	utils.DecodeJSON(resp.Body, &result)
+	return result
+}
+
+func (u *GatewayUsecase) GetPicturesFav(id string) []*domain.Picture {
+	resp, err := http.Get(utils.PictureService + utils.PictureByIDs + id)
 	if err != nil {
 		return nil
 	}
