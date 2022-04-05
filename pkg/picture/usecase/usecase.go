@@ -3,6 +3,7 @@ package usecase
 import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/picture/repository"
+	"ar_exhibition/pkg/utils"
 )
 
 type PictureUsecase struct {
@@ -41,6 +42,8 @@ func (u *PictureUsecase) GetPicturesByIDs(id []int) []*domain.Picture {
 	result := make([]*domain.Picture, 0)
 	for i := range id {
 		if pic, err := u.GetPictureID(id[i]); err == nil {
+			pic.Info, pic.Description = nil, ""
+			pic.Image = utils.SplitPic(pic.Image)[0]
 			result = append(result, pic)
 		}
 	}
