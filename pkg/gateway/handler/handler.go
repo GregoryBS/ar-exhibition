@@ -95,6 +95,10 @@ func (h *GatewayHandler) GetMuseums(ctx aero.Context) error {
 
 func (h *GatewayHandler) GetExhibitions(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL
+	if url.Query().Has("museumID") {
+		exhibitions := h.u.GetMuseumExhibitions(url.RawQuery)
+		return ctx.JSON(exhibitions)
+	}
 	content := h.u.GetExhibitions(url.RawQuery)
 	return ctx.JSON(content)
 }

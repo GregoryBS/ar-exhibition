@@ -89,11 +89,9 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int, filter string) 
 		if err != nil {
 			return result
 		}
-		fmt.Println(params)
 		row.Image = utils.ImageService + row.Image
 		from, _ := time.Parse(timeLayout, params["Начало"])
 		to, _ := time.Parse(timeLayout, params["Конец"])
-		fmt.Println(from, to)
 		switch filter {
 		case "all":
 			result = append(result, row)
@@ -110,7 +108,6 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int, filter string) 
 			result = append(result, row)
 		}
 	}
-	fmt.Println(result)
 	return result
 }
 

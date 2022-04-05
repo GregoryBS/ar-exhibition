@@ -88,14 +88,7 @@ func (u *GatewayUsecase) GetMuseum(id int) (*domain.Museum, *domain.ErrorRespons
 	utils.DecodeJSON(resp.Body, museum)
 	resp.Body.Close()
 
-	museum.Exhibitions = make([]*domain.Exhibition, 0)
-	resp, err = http.Get(utils.ExhibitionService + utils.ExhibitionByMuseum + fmt.Sprint(museum.ID))
-	if err != nil {
-		return nil, &domain.ErrorResponse{Message: err.Error()}
-	} else if resp.StatusCode == http.StatusOK {
-		utils.DecodeJSON(resp.Body, &museum.Exhibitions)
-	}
-	defer resp.Body.Close()
+	museum.Exhibitions = u.GetMuseumExhibitions("museumID=" + fmt.Sprint(museum.ID))
 	return museum, nil
 }
 
@@ -108,6 +101,17 @@ func (u *GatewayUsecase) GetMuseums(params string) *domain.Page {
 	defer resp.Body.Close()
 
 	utils.DecodeJSON(resp.Body, result)
+	return result
+}
+
+func (u *GatewayUsecase) GetMuseumExhibitions(params string) []*domain.Exhibition {
+	result := make([]*domain.Exhibition, 0)
+	resp, err := http.Get(utils.ExhibitionService + utils.BaseExhibitionApi + "?" + params)
+	if err != nil {
+		return result
+	}
+	defer resp.Body.Close()
+	utils.DecodeJSON(resp.Body, &result)
 	return result
 }
 
