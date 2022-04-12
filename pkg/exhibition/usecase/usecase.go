@@ -30,7 +30,11 @@ func (u *ExhibitionUsecase) GetExhibitionsByMuseum(museum int, filter string) []
 }
 
 func (u *ExhibitionUsecase) GetExhibitionID(id int) (*domain.Exhibition, error) {
-	return u.repo.ExhibitionID(id)
+	exh, err := u.repo.ExhibitionID(id)
+	if err != nil {
+		u.repo.UpdateExhibitionPopular(id)
+	}
+	return exh, err
 }
 
 func (u *ExhibitionUsecase) GetExhibitions(page, size int, filter string) *domain.Page {
