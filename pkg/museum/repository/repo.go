@@ -17,6 +17,7 @@ const (
 	from museum offset $1 limit $2;`
 	querySelectSearch = `select id, name, image, image_height, image_width
 	from museum where lower(name) like lower($1);`
+	queryUpdatePopular = `update museum set popular = popular + 1 where id = $1;`
 )
 
 type MuseumRepository struct {
@@ -63,6 +64,13 @@ func (repo *MuseumRepository) MuseumID(id int) (*domain.Museum, error) {
 	museum.Image = utils.ImageService + museum.Image
 	museum.Info = utils.MapJSON(params)
 	return museum, nil
+}
+
+func (repo *MuseumRepository) UpdateMuseumPopular(id int) {
+	_, err := repo.db.Pool.Exec(context.Background(), queryUpdatePopular, id)
+	if err != nil {
+		fmt.Println("Cannot update popular with museum id: ", id)
+	}
 }
 
 func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
