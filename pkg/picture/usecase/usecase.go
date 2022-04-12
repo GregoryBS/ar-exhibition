@@ -22,12 +22,16 @@ func (u *PictureUsecase) GetPicturesByExh(exhibition int) []*domain.Picture {
 	if exhibition > 0 {
 		return u.repo.ExhibitionPictures(exhibition)
 	} else {
-		return u.repo.AllPictures()
+		return u.repo.TopPictures(15)
 	}
 }
 
 func (u *PictureUsecase) GetPictureID(id int) (*domain.Picture, error) {
-	return u.repo.PictureID(id)
+	pic, err := u.repo.PictureID(id)
+	if err == nil {
+		u.repo.UpdatePicturePopular(id)
+	}
+	return pic, err
 }
 
 func (u *PictureUsecase) Search(name string) []*domain.Picture {
@@ -41,7 +45,7 @@ func (u *PictureUsecase) SearchID(name string, exhibitionID int) []*domain.Pictu
 func (u *PictureUsecase) GetPicturesByIDs(id []int) []*domain.Picture {
 	result := make([]*domain.Picture, 0)
 	for i := range id {
-		if pic, err := u.GetPictureID(id[i]); err == nil {
+		if pic, err := u.repo.PictureID(id[i]); err == nil {
 			pic.Info, pic.Description = nil, ""
 			pic.Image = strings.Split(pic.Image, ",")[0]
 			result = append(result, pic)
