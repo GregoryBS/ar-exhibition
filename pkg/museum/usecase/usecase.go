@@ -23,7 +23,7 @@ func (u *MuseumUsecase) GetMuseumTop() []*domain.Museum {
 
 func (u *MuseumUsecase) GetMuseumID(id int) (*domain.Museum, error) {
 	museum, err := u.repo.MuseumID(id)
-	if err != nil {
+	if err == nil {
 		u.repo.UpdateMuseumPopular(id)
 	}
 	return museum, err

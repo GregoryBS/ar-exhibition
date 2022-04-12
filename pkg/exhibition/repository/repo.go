@@ -58,8 +58,8 @@ func (repo *ExhibitionRepository) ExhibitionTop(limit int) []*domain.Exhibition 
 			return result
 		}
 		row.Image = utils.ImageService + row.Image
-		from, _ := time.Parse(timeLayout, params["Начало"])
-		to, _ := time.Parse(timeLayout, params["Конец"])
+		from, _ := time.Parse(timeLayout, params[utils.ExhibitionStart])
+		to, _ := time.Parse(timeLayout, params[utils.ExhibitionEnd])
 		t := time.Now()
 		if t.Before(to) && t.After(from) {
 			result = append(result, row)
@@ -105,8 +105,8 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int, filter string) 
 			return result
 		}
 		row.Image = utils.ImageService + row.Image
-		from, _ := time.Parse(timeLayout, params["Начало"])
-		to, _ := time.Parse(timeLayout, params["Конец"])
+		from, _ := time.Parse(timeLayout, params[utils.ExhibitionStart])
+		to, _ := time.Parse(timeLayout, params[utils.ExhibitionEnd])
 		switch filter {
 		case "all":
 			result = append(result, row)
@@ -143,8 +143,8 @@ func (repo *ExhibitionRepository) AllExhibitions(page, size int, filter string) 
 			return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 		}
 		row.Image = utils.ImageService + row.Image
-		from, _ := time.Parse(timeLayout, params["Начало"])
-		to, _ := time.Parse(timeLayout, params["Конец"])
+		from, _ := time.Parse(timeLayout, params[utils.ExhibitionStart])
+		to, _ := time.Parse(timeLayout, params[utils.ExhibitionEnd])
 		switch filter {
 		case "all":
 			result = append(result, row)
@@ -180,8 +180,8 @@ func (repo *ExhibitionRepository) Search(name, filter string) []*domain.Exhibiti
 			return result
 		}
 		row.Image = utils.ImageService + row.Image
-		from, _ := time.Parse(timeLayout, params["Начало"])
-		to, _ := time.Parse(timeLayout, params["Конец"])
+		from, _ := time.Parse(timeLayout, params[utils.ExhibitionStart])
+		to, _ := time.Parse(timeLayout, params[utils.ExhibitionEnd])
 		switch filter {
 		case "all":
 			result = append(result, row)
@@ -217,8 +217,8 @@ func (repo *ExhibitionRepository) SearchID(name string, museumID int, filter str
 			return result
 		}
 		row.Image = utils.ImageService + row.Image
-		from, _ := time.Parse(timeLayout, params["Начало"])
-		to, _ := time.Parse(timeLayout, params["Конец"])
+		from, _ := time.Parse(timeLayout, params[utils.ExhibitionStart])
+		to, _ := time.Parse(timeLayout, params[utils.ExhibitionEnd])
 		switch filter {
 		case "all":
 			result = append(result, row)

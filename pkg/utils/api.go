@@ -46,3 +46,8 @@ const (
 	PictureSearch       = BasePictureSearch + "?name="
 	PictureSearchID     = BasePictureSearch + "?name=%s&id=%d"
 )
+
+const (
+	ExhibitionStart = "Начало"
+	ExhibitionEnd   = "Конец"
+)
