@@ -29,6 +29,10 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Get(utils.GatewayApiPictureID, h.GetPicture)
 		app.Get(utils.GatewayApiExhibitionID, h.GetExhibition)
 		app.Get(utils.GatewayApiMuseumID, h.GetMuseum)
+		app.Get(utils.GatewayApiMuseums, h.GetMuseums)
+		app.Get(utils.GatewayApiExhibitions, h.GetExhibitions)
+		app.Get(utils.GatewayApiSearch, h.Search)
+		app.Get(utils.GatewayApiPictures, h.GetPictures)
 	}
 	return app
 }
@@ -81,4 +85,55 @@ func (h *GatewayHandler) GetMuseum(ctx aero.Context) error {
 		return ctx.JSON(msg)
 	}
 	return ctx.JSON(museum)
+}
+
+func (h *GatewayHandler) GetMuseums(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL
+	content := h.u.GetMuseums(url.RawQuery)
+	return ctx.JSON(content)
+}
+
+func (h *GatewayHandler) GetExhibitions(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL
+	if url.Query().Has("museumID") {
+		exhibitions := h.u.GetMuseumExhibitions(url.RawQuery)
+		return ctx.JSON(exhibitions)
+	}
+	content := h.u.GetExhibitions(url.RawQuery)
+	return ctx.JSON(content)
+}
+
+func (h *GatewayHandler) Search(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL
+	if url.Query().Has("id") {
+		result := h.u.SearchByID(url.Query().Get("type"), url.RawQuery)
+		if result == nil {
+			ctx.SetStatus(http.StatusNotFound)
+			return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
+		}
+		return ctx.JSON(result)
+	}
+	content := h.u.Search(url.Query().Get("type"), url.RawQuery)
+	if content == nil {
+		ctx.SetStatus(http.StatusNotFound)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
+	}
+	return ctx.JSON(content)
+}
+
+func (h *GatewayHandler) GetPictures(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL.Query()
+	ids := url.Get("id")
+	exhibition := url.Get("exhibitionID")
+	var pictures []*domain.Picture
+	if exhibition != "" {
+		pictures = h.u.GetPicturesExh(exhibition)
+	} else {
+		pictures = h.u.GetPicturesFav(ids)
+	}
+	if pictures == nil {
+		ctx.SetStatus(http.StatusNotFound)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
+	}
+	return ctx.JSON(pictures)
 }

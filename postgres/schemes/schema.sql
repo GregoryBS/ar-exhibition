@@ -38,7 +38,8 @@ create table picture
     description text not null,
     info        json not null default '{}',
     height      int not null,
-    width       int not null
+    width       int not null,
+    popular      bigint not null default 0
 );
 
 insert into picture(exh_id, name, image, description, info, height, width) 

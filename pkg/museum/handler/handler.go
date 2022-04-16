@@ -26,6 +26,8 @@ func ConfigureMuseum(app *aero.Application, handlers interface{}) *aero.Applicat
 	if ok {
 		app.Get(utils.MuseumTop, h.GetMuseumTop)
 		app.Get(utils.MuseumID, h.GetMuseumID)
+		app.Get(utils.BaseMuseumApi, h.GetMuseums)
+		app.Get(utils.BaseMuseumSearch, h.Search)
 	}
 	return app
 }
@@ -43,4 +45,24 @@ func (h *MuseumHandler) GetMuseumID(ctx aero.Context) error {
 		return ctx.JSON(nil)
 	}
 	return ctx.JSON(museum)
+}
+
+func (h *MuseumHandler) GetMuseums(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL.Query()
+	page, err := strconv.Atoi(url.Get("page"))
+	if err != nil {
+		page = 1
+	}
+	size, err := strconv.Atoi(url.Get("size"))
+	if err != nil {
+		size = 10
+	}
+	content := h.u.GetMuseums(page, size)
+	return ctx.JSON(content)
+}
+
+func (h *MuseumHandler) Search(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL.Query()
+	content := h.u.Search(url.Get("name"))
+	return ctx.JSON(content)
 }

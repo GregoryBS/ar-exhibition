@@ -10,11 +10,17 @@ import (
 )
 
 const (
-	querySelectAll   = `select id, name, image, height, width from picture;`
-	querySelectByExh = `select id, name, image, height, width 
+	querySelectTop = `select id, name, image, height, width 
+	from picture order by popular desc limit $1;`
+	querySelectByExh = `select id, name, image, height, width, video, video_size
 	from picture where exh_id = $1;`
-	querySelectOne = `select id, name, image, description, info
+	querySelectOne = `select id, name, image, description, info, height, width
 	from picture where id = $1;`
+	querySelectSearch = `select  id, name, image, height, width 
+	from picture where lower(name) like lower($1);`
+	querySelectSearchID = `select  id, name, image, height, width 
+	from picture where lower(name) like lower($1) and exh_id = $2;`
+	queryUpdatePopular = `update picture set popular = popular + 1 where id = $1;`
 )
 
 type PictureRepository struct {
@@ -39,19 +45,22 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Pict
 
 	for rows.Next() {
 		row := &domain.Picture{Sizes: &domain.ImageSize{}}
-		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width, &row.Video, &row.VideoSize)
 		if err != nil {
 			return result
 		}
 		row.Image = utils.SplitPic(row.Image)[0]
+		if row.Video != "" {
+			row.Video = utils.VideoService + row.Video
+		}
 		result = append(result, row)
 	}
 	return result
 }
 
-func (repo *PictureRepository) AllPictures() []*domain.Picture {
+func (repo *PictureRepository) TopPictures(limit int) []*domain.Picture {
 	result := make([]*domain.Picture, 0)
-	rows, err := repo.db.Pool.Query(context.Background(), querySelectAll)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectTop, limit)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -71,14 +80,61 @@ func (repo *PictureRepository) AllPictures() []*domain.Picture {
 }
 
 func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
-	pic := &domain.Picture{}
+	pic := &domain.Picture{Sizes: &domain.ImageSize{}}
 	params := make(map[string]string, 0)
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
-	err := row.Scan(&pic.ID, &pic.Name, &pic.Image, &pic.Description, &params)
+	err := row.Scan(&pic.ID, &pic.Name, &pic.Image, &pic.Description, &params, &pic.Sizes.Height, &pic.Sizes.Width)
 	if err != nil {
 		return nil, err
 	}
 	pic.Image = strings.Join(utils.SplitPic(pic.Image), ",")
 	pic.Info = utils.MapJSON(params)
 	return pic, nil
+}
+
+func (repo *PictureRepository) UpdatePicturePopular(id int) {
+	_, err := repo.db.Pool.Exec(context.Background(), queryUpdatePopular, id)
+	if err != nil {
+		fmt.Println("Cannot update popular with picture id: ", id)
+	}
+}
+
+func (repo *PictureRepository) Search(name string) []*domain.Picture {
+	result := make([]*domain.Picture, 0)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, "%"+name+"%")
+	if err != nil {
+		return result
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		row := &domain.Picture{Sizes: &domain.ImageSize{}}
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		if err != nil {
+			return result
+		}
+		row.Image = utils.SplitPic(row.Image)[0]
+		result = append(result, row)
+	}
+	return result
+}
+
+func (repo *PictureRepository) SearchID(name string, exhibitionID int) []*domain.Picture {
+	result := make([]*domain.Picture, 0)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearchID, "%"+name+"%", exhibitionID)
+	if err != nil {
+		return result
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		row := &domain.Picture{Sizes: &domain.ImageSize{}}
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		if err != nil {
+			return result
+		}
+		row.Image = utils.SplitPic(row.Image)[0]
+		result = append(result, row)
+	}
+	return result
 }

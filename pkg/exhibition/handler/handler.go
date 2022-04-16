@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/exhibition/usecase"
 	"ar_exhibition/pkg/utils"
 	"net/http"
@@ -27,6 +28,7 @@ func ConfigureExhibition(app *aero.Application, handlers interface{}) *aero.Appl
 		app.Get(utils.ExhibitionTop, h.GetExhibitionTop)
 		app.Get(utils.BaseExhibitionApi, h.GetExhibitions)
 		app.Get(utils.ExhibitionID, h.GetExhibitionID)
+		app.Get(utils.BaseExhibitionSearch, h.Search)
 	}
 	return app
 }
@@ -38,11 +40,21 @@ func (h *ExhibitionHandler) GetExhibitionTop(ctx aero.Context) error {
 
 func (h *ExhibitionHandler) GetExhibitions(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
+	filter := url.Get("filter")
 	museumID, err := strconv.Atoi(url.Get("museumID"))
 	if err != nil {
-		museumID = 0
+		page, err := strconv.Atoi(url.Get("page"))
+		if err != nil {
+			page = 1
+		}
+		size, err := strconv.Atoi(url.Get("size"))
+		if err != nil {
+			size = 10
+		}
+		exhibitionPage := h.u.GetExhibitions(page, size, filter)
+		return ctx.JSON(exhibitionPage)
 	}
-	exhibitions := h.u.GetExhibitions(museumID)
+	exhibitions := h.u.GetExhibitionsByMuseum(museumID, filter)
 	return ctx.JSON(exhibitions)
 }
 
@@ -54,4 +66,17 @@ func (h *ExhibitionHandler) GetExhibitionID(ctx aero.Context) error {
 		return ctx.JSON(nil)
 	}
 	return ctx.JSON(exhibition)
+}
+
+func (h *ExhibitionHandler) Search(ctx aero.Context) error {
+	var content []*domain.Exhibition
+	url := ctx.Request().Internal().URL.Query()
+	filter := url.Get("filter")
+	name := url.Get("name")
+	if id, err := strconv.Atoi(url.Get("id")); err == nil {
+		content = h.u.SearchID(name, id, filter)
+	} else {
+		content = h.u.Search(name, filter)
+	}
+	return ctx.JSON(content)
 }

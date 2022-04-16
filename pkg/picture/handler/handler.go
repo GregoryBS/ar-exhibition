@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/picture/usecase"
 	"ar_exhibition/pkg/utils"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/aerogo/aero"
 )
@@ -26,17 +28,29 @@ func ConfigurePicture(app *aero.Application, handlers interface{}) *aero.Applica
 	if ok {
 		app.Get(utils.BasePictureApi, h.GetPictures)
 		app.Get(utils.PictureID, h.GetPictureID)
+		app.Get(utils.BasePictureSearch, h.Search)
 	}
 	return app
 }
 
 func (h *PictureHandler) GetPictures(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
-	exhibitionID, err := strconv.Atoi(url.Get("exhibitionID"))
-	if err != nil {
-		exhibitionID = 0
+	var pictures []*domain.Picture
+	ids := url.Get("id")
+	if ids == "" {
+		exhibitionID, err := strconv.Atoi(url.Get("exhibitionID"))
+		if err != nil {
+			exhibitionID = 0
+		}
+		pictures = h.u.GetPicturesByExh(exhibitionID)
+	} else {
+		id := make([]int, 0)
+		for _, str := range strings.Split(ids, ",") {
+			num, _ := strconv.Atoi(str)
+			id = append(id, num)
+		}
+		pictures = h.u.GetPicturesByIDs(id)
 	}
-	pictures := h.u.GetPictures(exhibitionID)
 	return ctx.JSON(pictures)
 }
 
@@ -48,4 +62,16 @@ func (h *PictureHandler) GetPictureID(ctx aero.Context) error {
 		return ctx.JSON(nil)
 	}
 	return ctx.JSON(picture)
+}
+
+func (h *PictureHandler) Search(ctx aero.Context) error {
+	var content []*domain.Picture
+	url := ctx.Request().Internal().URL.Query()
+	name := url.Get("name")
+	if id, err := strconv.Atoi(url.Get("id")); err == nil {
+		content = h.u.SearchID(name, id)
+	} else {
+		content = h.u.Search(name)
+	}
+	return ctx.JSON(content)
 }
