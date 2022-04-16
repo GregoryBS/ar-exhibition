@@ -51,3 +51,9 @@ const (
 	ExhibitionStart = "Начало"
 	ExhibitionEnd   = "Конец"
 )
+
+const (
+	BaseUserApi = "/api/v1/users"
+	UserSignup  = BaseUserApi + "/signup"
+	UserLogin   = BaseUserApi + "/login"
+)
