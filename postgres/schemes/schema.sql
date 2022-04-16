@@ -3,10 +3,10 @@ create table museum
     id                  serial primary key,
     name                text not null,
     info                json not null default '{}',
-    description         text not null,
-    image               text not null,
-    image_height        int not null,
-    image_width         int not null,
+    description         text not null default '',
+    image               text not null default '',
+    image_height        int not null default 0,
+    image_width         int not null default 0,
     popular             bigint not null default 0
 );
 
@@ -32,7 +32,7 @@ values(1, 'Exhibition', 'Most beautiful exhibition in Moscow', '{"Начало":
 create table picture
 (
     id          serial primary key,
-    exh_id      int not null,
+    exh_id      int not null default 0,
     name        text not null,
     image       text not null,
     description text not null,
@@ -44,3 +44,11 @@ create table picture
 
 insert into picture(exh_id, name, image, description, info, height, width) 
 values(1, 'Cat', 'default.jpg,notfound.jpg', 'First picture in the app', '{"Автор":"Человек","Год":"2021","Техника":"Компьютерная графика","Размер":"3 х 2"}'::json, 835, 600);
+
+create table users 
+(
+    id       serial primary key,
+    login    text unique not null,
+    password bytea not null,
+    museum   int not null
+);

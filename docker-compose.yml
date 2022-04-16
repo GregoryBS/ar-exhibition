@@ -57,5 +57,16 @@ services:
     environment:
       DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
 
+  user:
+    build:
+      context: .
+      args:
+        service: user
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+    ports:
+      - 8080:8000
+
 volumes:
   db-data:
