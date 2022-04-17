@@ -27,6 +27,8 @@ require (
 	github.com/jackc/pgtype v1.10.0 // indirect
 	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
+	github.com/robbert229/jwt v2.0.0+incompatible // indirect
 	github.com/stretchr/testify v1.7.1 // indirect
 	github.com/zeebo/xxh3 v1.0.1 // indirect
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect

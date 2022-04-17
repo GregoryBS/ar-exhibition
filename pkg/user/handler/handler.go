@@ -1,8 +1,12 @@
 package handler
 
 import (
+	"ar_exhibition/pkg/domain"
+	"ar_exhibition/pkg/user"
 	"ar_exhibition/pkg/user/usecase"
 	"ar_exhibition/pkg/utils"
+	"bytes"
+	"net/http"
 
 	"github.com/aerogo/aero"
 )
@@ -24,14 +28,78 @@ func ConfigureUser(app *aero.Application, handlers interface{}) *aero.Applicatio
 	if ok {
 		app.Post(utils.UserSignup, h.Signup)
 		app.Post(utils.UserLogin, h.Login)
+		app.Get(utils.UserID, h.Check)
 	}
 	return app
 }
 
 func (h *UserHandler) Signup(ctx aero.Context) error {
-	return nil
+	form := &domain.User{}
+	if utils.DecodeJSON(ctx.Request().Body().Reader(), form) != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid signup form"})
+	}
+
+	created, err := h.u.Signup(form)
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(err)
+	}
+
+	token, err := user.CreateJWT(created.ID)
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Cannot create jwt-token"})
+	}
+	created.Token = token
+
+	req, _ := http.NewRequest(http.MethodPost, utils.GatewayService+utils.GatewayApiMuseums,
+		bytes.NewBuffer(utils.EncodeJSON(&domain.Museum{Name: form.Museum})))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
+
+	flag := false
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		flag = true
+	} else if resp.StatusCode != http.StatusOK {
+		defer resp.Body.Close()
+		flag = true
+	}
+	if flag {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Cannot create museum for user"})
+	}
+	return ctx.JSON(created)
 }
 
 func (h *UserHandler) Login(ctx aero.Context) error {
-	return nil
+	form := &domain.User{}
+	if utils.DecodeJSON(ctx.Request().Body().Reader(), form) != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid login form"})
+	}
+
+	created, err := h.u.Login(form)
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(err)
+	}
+
+	token, err := user.CreateJWT(created.ID)
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Cannot create jwt-token"})
+	}
+	created.Token = token
+	return ctx.JSON(created)
+}
+
+func (h *UserHandler) Check(ctx aero.Context) error {
+	id := user.CheckJWT(ctx.Request().Header("Authorization"))
+	if id > 0 {
+		return ctx.JSON(domain.User{ID: id})
+	}
+	ctx.SetStatus(http.StatusForbidden)
+	return ctx.JSON(domain.ErrorResponse{Message: "user not authorized"})
 }
