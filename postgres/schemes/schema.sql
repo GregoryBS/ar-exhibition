@@ -1,13 +1,14 @@
 create table museum
 (
-    id                  serial primary key,
-    name                text not null,
-    info                json not null default '{}',
-    description         text not null default '',
-    image               text not null default '',
-    image_height        int not null default 0,
-    image_width         int not null default 0,
-    popular             bigint not null default 0
+    id             serial primary key,
+    name           text not null,
+    info           json not null default '{}',
+    description    text not null default '',
+    image          text not null default '',
+    image_height   int not null default 0,
+    image_width    int not null default 0,
+    popular        bigint not null default 0,
+    user_id        int not null default 0
 );
 
 insert into museum(name, info, description, image, image_height, image_width) 
@@ -23,7 +24,8 @@ create table exhibition
     image_height int not null,
     image_width  int not null,
     info         json not null default '{}',
-    popular      bigint not null default 0
+    popular      bigint not null default 0,
+    user_id      int not null default 0
 );
 
 insert into exhibition(museum_id, name, description, info, image, image_height, image_width) 
@@ -39,7 +41,8 @@ create table picture
     info        json not null default '{}',
     height      int not null,
     width       int not null,
-    popular      bigint not null default 0
+    popular     bigint not null default 0,
+    user_id     int not null default 0
 );
 
 insert into picture(exh_id, name, image, description, info, height, width) 
@@ -49,6 +52,5 @@ create table users
 (
     id       serial primary key,
     login    text unique not null,
-    password bytea not null,
-    museum   int not null
+    password bytea not null
 );
