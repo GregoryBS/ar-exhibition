@@ -4,13 +4,10 @@ import (
 	"ar_exhibition/pkg/domain"
 	"encoding/json"
 	"io"
+	"math/rand"
 	"strings"
+	"time"
 )
-
-type JSONError struct {
-	Message string            `json:"message"`
-	Errors  map[string]string `json:"errors,omitempty"`
-}
 
 func DecodeJSON(body io.Reader, dst interface{}) error {
 	return json.NewDecoder(body).Decode(dst)
@@ -38,4 +35,18 @@ func SplitPic(pics string) []string {
 		buf[i] = ImageService + buf[i]
 	}
 	return buf
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func RandString(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
 }

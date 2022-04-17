@@ -4,6 +4,8 @@ const (
 	MuseumService     = "http://museum:8080"
 	ExhibitionService = "http://exhibition:8080"
 	PictureService    = "http://picture:8080"
+	UserService       = "http://user:8000"
+	GatewayService    = "http://gateway:8080"
 	ImageService      = "http://95.163.213.222/images/"
 	VideoService      = "http://95.163.213.222/videos/"
 )
@@ -56,4 +58,5 @@ const (
 	BaseUserApi = "/api/v1/users"
 	UserSignup  = BaseUserApi + "/signup"
 	UserLogin   = BaseUserApi + "/login"
+	UserID      = BaseUserApi + "/id"
 )

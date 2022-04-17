@@ -63,3 +63,12 @@ type SearchPage struct {
 type ErrorResponse struct {
 	Message string `json:"message"`
 }
+
+type User struct {
+	ID       int    `json:"id,omitempty"`
+	Login    string `json:"login"`
+	PassIn   string `json:"password,omitempty"`
+	Password []byte `json:"-"`
+	Museum   string `json:"museum,omitempty"`
+	Token    string `json:"token,omitempty"`
+}
