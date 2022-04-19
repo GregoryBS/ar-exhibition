@@ -3,6 +3,8 @@ package usecase
 import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/utils"
+	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -232,4 +234,40 @@ func (u *GatewayUsecase) GetPicturesFav(id string) []*domain.Picture {
 	result := make([]*domain.Picture, 0)
 	utils.DecodeJSON(resp.Body, &result)
 	return result
+}
+
+func (u *GatewayUsecase) CreateMuseum(museum *domain.Museum, user int) (*domain.Museum, error) {
+	req, _ := http.NewRequest(http.MethodPost, utils.MuseumService+utils.BaseMuseumApi,
+		bytes.NewBuffer(utils.EncodeJSON(museum)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("Unable to create museum")
+	}
+	result := new(domain.Museum)
+	utils.DecodeJSON(resp.Body, result)
+	return result, nil
+}
+
+func (u *GatewayUsecase) UpdateMuseum(museum *domain.Museum, user int) (*domain.Museum, error) {
+	req, _ := http.NewRequest(http.MethodPost, utils.MuseumService+strings.Replace(utils.MuseumID, ":id", fmt.Sprint(museum.ID), 1),
+		bytes.NewBuffer(utils.EncodeJSON(museum)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("Unable to update museum")
+	}
+	result := new(domain.Museum)
+	utils.DecodeJSON(resp.Body, result)
+	return result, nil
 }
