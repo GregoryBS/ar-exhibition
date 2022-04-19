@@ -21,6 +21,7 @@ services:
       - museum
       - exhibition
       - picture
+      - user
     ports:
       - 8080:8080
 
@@ -34,6 +35,7 @@ services:
       - database
     environment:
       DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
+      PORT: 8081
 
   exhibition:
     build:
@@ -45,6 +47,7 @@ services:
       - database
     environment:
       DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
+      PORT: 8082
 
   picture:
     build:
@@ -56,6 +59,7 @@ services:
       - database
     environment:
       DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
+      PORT: 8083
 
   user:
     build:
@@ -65,8 +69,11 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - database
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
+      PORT: 8000
     ports:
-      - 8080:8000
+      - 8000:8000
 
 volumes:
   db-data:

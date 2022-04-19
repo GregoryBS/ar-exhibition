@@ -1,9 +1,9 @@
 package utils
 
 const (
-	MuseumService     = "http://museum:8080"
-	ExhibitionService = "http://exhibition:8080"
-	PictureService    = "http://picture:8080"
+	MuseumService     = "http://museum:8081"
+	ExhibitionService = "http://exhibition:8082"
+	PictureService    = "http://picture:8083"
 	UserService       = "http://user:8000"
 	GatewayService    = "http://gateway:8080"
 	ImageService      = "http://95.163.213.222/images/"
