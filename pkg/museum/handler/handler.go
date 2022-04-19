@@ -31,6 +31,7 @@ func ConfigureMuseum(app *aero.Application, handlers interface{}) *aero.Applicat
 		app.Get(utils.BaseMuseumSearch, h.Search)
 		app.Post(utils.BaseMuseumApi, h.Create)
 		app.Post(utils.MuseumID, h.Update)
+		app.Post(utils.MuseumImage, h.UpdateImage)
 	}
 	return app
 }
@@ -95,6 +96,22 @@ func (h *MuseumHandler) Update(ctx aero.Context) error {
 	}
 
 	museum = h.u.Update(museum, user)
+	if museum == nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})
+	}
+	return ctx.JSON(museum)
+}
+
+func (h *MuseumHandler) UpdateImage(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
+	museum := new(domain.Museum)
+	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), museum); err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})
+	}
+
+	museum = h.u.UpdateImage(museum, user)
 	if museum == nil {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})

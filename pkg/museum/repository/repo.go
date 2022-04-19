@@ -20,6 +20,7 @@ const (
 	queryUpdatePopular = `update museum set popular = popular + 1 where id = $1;`
 	queryInsert        = `insert into museum (name, user_id) values($1, $2) returning id;`
 	queryUpdate        = `update museum set name = $1, description = $2, info = $3 where id = $4 and user_id = $5;`
+	queryUpdateImage   = `update museum set image = $1, image_height = $2, image_width = $3 where id = $4 and user_id = $5;`
 )
 
 type MuseumRepository struct {
@@ -131,6 +132,14 @@ func (repo *MuseumRepository) Update(museum *domain.Museum, user int) *domain.Mu
 		params[v.Type] = v.Value
 	}
 	result, err := repo.db.Pool.Exec(context.Background(), queryUpdate, museum.Name, museum.Description, params, museum.ID, user)
+	if err != nil || result.RowsAffected() == 0 {
+		return nil
+	}
+	return museum
+}
+
+func (repo *MuseumRepository) UpdateImage(museum *domain.Museum, user int) *domain.Museum {
+	result, err := repo.db.Pool.Exec(context.Background(), queryUpdateImage, museum.Image, museum.Sizes.Height, museum.Sizes.Width, museum.ID, user)
 	if err != nil || result.RowsAffected() == 0 {
 		return nil
 	}

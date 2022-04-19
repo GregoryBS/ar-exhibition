@@ -271,3 +271,19 @@ func (u *GatewayUsecase) UpdateMuseum(museum *domain.Museum, user int) (*domain.
 	utils.DecodeJSON(resp.Body, result)
 	return result, nil
 }
+
+func (u *GatewayUsecase) UpdateMuseumImage(filename string, sizes *domain.ImageSize, museum, user int) *domain.ErrorResponse {
+	req, _ := http.NewRequest(http.MethodPost, utils.MuseumService+strings.Replace(utils.MuseumImage, ":id", fmt.Sprint(museum), 1),
+		bytes.NewBuffer(utils.EncodeJSON(domain.Museum{ID: museum, Image: filename, Sizes: sizes})))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return &domain.ErrorResponse{Message: "Museum service is unavailable"}
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return &domain.ErrorResponse{Message: "Unable to update museum image"}
+	}
+	return nil
+}

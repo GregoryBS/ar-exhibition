@@ -44,3 +44,7 @@ func (u *MuseumUsecase) Create(museum *domain.Museum, user int) *domain.Museum {
 func (u *MuseumUsecase) Update(museum *domain.Museum, user int) *domain.Museum {
 	return u.repo.Update(museum, user)
 }
+
+func (u *MuseumUsecase) UpdateImage(museum *domain.Museum, user int) *domain.Museum {
+	return u.repo.UpdateImage(museum, user)
+}

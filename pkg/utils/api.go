@@ -15,6 +15,7 @@ const (
 	GatewayApiPictureID    = "/api/v1/pictures/:id"
 	GatewayApiExhibitionID = "/api/v1/exhibitions/:id"
 	GatewayApiMuseumID     = "/api/v1/museums/:id"
+	GatewayApiMuseumImage  = "/api/v1/museums/:id/images"
 	GatewayApiMuseums      = "/api/v1/museums"
 	GatewayApiExhibitions  = "/api/v1/exhibitions"
 	GatewayApiSearch       = "/api/v1/search"
@@ -27,6 +28,7 @@ const (
 	MuseumID         = BaseMuseumApi + "/:id"
 	BaseMuseumSearch = BaseMuseumApi + "/search"
 	MuseumSearch     = BaseMuseumSearch + "?name="
+	MuseumImage      = MuseumID + "/images"
 )
 
 const (

@@ -41,6 +41,7 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Get(utils.GatewayApiPictures, h.GetPictures)
 		app.Post(utils.GatewayApiMuseums, h.CreateMuseum)
 		app.Post(utils.GatewayApiMuseumID, h.UpdateMuseum)
+		app.Post(utils.GatewayApiMuseumImage, h.UpdateMuseumImage)
 	}
 	return app
 }
@@ -178,17 +179,37 @@ func (h *GatewayHandler) UpdateMuseum(ctx aero.Context) error {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})
 	}
-	// museum.Image, museum.Sizes = uploadImage(ctx.Request().Internal(), "./pics/")
-	// if museum.Image == "" {
-	// 	ctx.SetStatus(http.StatusBadRequest)
-	// 	return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload museum image"})
-	// }
 	museum, err := h.u.UpdateMuseum(museum, user.ID)
 	if err != nil {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
 	return ctx.JSON(museum)
+}
+
+func (h *GatewayHandler) UpdateMuseumImage(ctx aero.Context) error {
+	id, err := strconv.Atoi(ctx.Get("id"))
+	if err != nil {
+		resp := domain.ErrorResponse{Message: "id not a number"}
+		return ctx.JSON(resp)
+	}
+
+	user := checkAuth(ctx.Request().Header("Authorization"))
+	if user == nil {
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
+	}
+
+	image, sizes := uploadImage(ctx.Request().Internal(), "./pics/")
+	if image == "" {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload museum image"})
+	}
+	result := h.u.UpdateMuseumImage(image, sizes, id, user.ID)
+	if result != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+	}
+	return ctx.JSON(result)
 }
 
 func checkAuth(header string) *domain.User {
