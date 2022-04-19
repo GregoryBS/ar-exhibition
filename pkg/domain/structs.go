@@ -66,7 +66,7 @@ type ErrorResponse struct {
 
 type User struct {
 	ID       int    `json:"id,omitempty"`
-	Login    string `json:"login"`
+	Login    string `json:"login,omitempty"`
 	PassIn   string `json:"password,omitempty"`
 	Password []byte `json:"-"`
 	Museum   string `json:"museum,omitempty"`

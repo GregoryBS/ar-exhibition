@@ -60,3 +60,5 @@ const (
 	UserLogin   = BaseUserApi + "/login"
 	UserID      = BaseUserApi + "/id"
 )
+
+const UserHeader = "X-User"
