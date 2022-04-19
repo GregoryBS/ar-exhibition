@@ -18,6 +18,8 @@ const (
 	querySelectSearch = `select id, name, image, image_height, image_width
 	from museum where lower(name) like lower($1);`
 	queryUpdatePopular = `update museum set popular = popular + 1 where id = $1;`
+	queryInsert        = `insert into museum (name, user_id) values($1, $2) returning id;`
+	queryUpdate        = `update museum set name = $1, description = $2, info = $3 where id = $4 and user_id = $5;`
 )
 
 type MuseumRepository struct {
@@ -112,4 +114,25 @@ func (repo *MuseumRepository) Search(name string) []*domain.Museum {
 		result = append(result, row)
 	}
 	return result
+}
+
+func (repo *MuseumRepository) Create(museum *domain.Museum, user int) *domain.Museum {
+	row := repo.db.Pool.QueryRow(context.Background(), queryInsert, museum.Name, user)
+	err := row.Scan(&museum.ID)
+	if err != nil {
+		return nil
+	}
+	return museum
+}
+
+func (repo *MuseumRepository) Update(museum *domain.Museum, user int) *domain.Museum {
+	params := make(map[string]string, 0)
+	for _, v := range museum.Info {
+		params[v.Type] = v.Value
+	}
+	result, err := repo.db.Pool.Exec(context.Background(), queryUpdate, museum.Name, museum.Description, params, museum.ID, user)
+	if err != nil || result.RowsAffected() == 0 {
+		return nil
+	}
+	return museum
 }
