@@ -53,3 +53,11 @@ func (u *PictureUsecase) GetPicturesByIDs(id []int) []*domain.Picture {
 	}
 	return result
 }
+
+func (u *PictureUsecase) Create(pic *domain.Picture, user int) *domain.Picture {
+	return u.repo.Create(pic, user)
+}
+
+func (u *PictureUsecase) UpdateImage(pic *domain.Picture, user int) *domain.Picture {
+	return u.repo.UpdateImage(pic, user)
+}

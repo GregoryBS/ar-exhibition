@@ -13,6 +13,7 @@ const (
 const (
 	GatewayApiMain         = "/api/v1/"
 	GatewayApiPictureID    = "/api/v1/pictures/:id"
+	GatewayApiPictureImage = "/api/v1/pictures/:id/images"
 	GatewayApiExhibitionID = "/api/v1/exhibitions/:id"
 	GatewayApiMuseumID     = "/api/v1/museums/:id"
 	GatewayApiMuseumImage  = "/api/v1/museums/:id/images"
@@ -44,6 +45,7 @@ const (
 const (
 	BasePictureApi      = "/api/v1/pictures"
 	PictureID           = BasePictureApi + "/:id"
+	PictureImage        = PictureID + "/images"
 	PictureByExhibition = BasePictureApi + "?exhibitionID="
 	PictureByIDs        = BasePictureApi + "?id="
 	BasePictureSearch   = BasePictureApi + "/search"

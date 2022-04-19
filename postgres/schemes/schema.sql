@@ -36,11 +36,11 @@ create table picture
     id          serial primary key,
     exh_id      int not null default 0,
     name        text not null,
-    image       text not null,
+    image       text not null default '',
     description text not null,
     info        json not null default '{}',
-    height      int not null,
-    width       int not null,
+    height      int not null default 0,
+    width       int not null default 0,
     popular     bigint not null default 0,
     user_id     int not null default 0
 );

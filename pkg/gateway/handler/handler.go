@@ -16,6 +16,10 @@ import (
 	"github.com/aerogo/aero"
 )
 
+const (
+	PicsDir = "./pictures/"
+)
+
 type GatewayHandler struct {
 	u *usecase.GatewayUsecase
 }
@@ -42,6 +46,8 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Post(utils.GatewayApiMuseums, h.CreateMuseum)
 		app.Post(utils.GatewayApiMuseumID, h.UpdateMuseum)
 		app.Post(utils.GatewayApiMuseumImage, h.UpdateMuseumImage)
+		app.Post(utils.GatewayApiPictures, h.CreatePicture)
+		app.Post(utils.GatewayApiPictureImage, h.UpdatePictureImage)
 	}
 	return app
 }
@@ -200,12 +206,57 @@ func (h *GatewayHandler) UpdateMuseumImage(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
 
-	image, sizes := uploadImage(ctx.Request().Internal(), "./pics/")
+	image, sizes := uploadImage(ctx.Request().Internal(), PicsDir)
 	if image == "" {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload museum image"})
 	}
 	result := h.u.UpdateMuseumImage(image, sizes, id, user.ID)
+	if result != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+	}
+	return ctx.JSON(result)
+}
+
+func (h *GatewayHandler) CreatePicture(ctx aero.Context) error {
+	pic := new(domain.Picture)
+	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), pic); err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to create"})
+	}
+
+	user := checkAuth(ctx.Request().Header("Authorization"))
+	if user == nil {
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
+	}
+	pic, err := h.u.CreatePicture(pic, user.ID)
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
+	}
+	return ctx.JSON(pic)
+}
+
+func (h *GatewayHandler) UpdatePictureImage(ctx aero.Context) error {
+	id, err := strconv.Atoi(ctx.Get("id"))
+	if err != nil {
+		resp := domain.ErrorResponse{Message: "id not a number"}
+		return ctx.JSON(resp)
+	}
+
+	user := checkAuth(ctx.Request().Header("Authorization"))
+	if user == nil {
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
+	}
+
+	image, sizes := uploadImage(ctx.Request().Internal(), PicsDir)
+	if image == "" {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload picture image"})
+	}
+	result := h.u.UpdatePictureImage(image, sizes, id, user.ID)
 	if result != nil {
 		ctx.SetStatus(http.StatusBadRequest)
 	}

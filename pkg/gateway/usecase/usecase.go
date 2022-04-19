@@ -287,3 +287,37 @@ func (u *GatewayUsecase) UpdateMuseumImage(filename string, sizes *domain.ImageS
 	}
 	return nil
 }
+
+func (u *GatewayUsecase) CreatePicture(pic *domain.Picture, user int) (*domain.Picture, error) {
+	req, _ := http.NewRequest(http.MethodPost, utils.PictureService+utils.BasePictureApi,
+		bytes.NewBuffer(utils.EncodeJSON(pic)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("Unable to create picture")
+	}
+	result := new(domain.Picture)
+	utils.DecodeJSON(resp.Body, result)
+	return result, nil
+}
+
+func (u *GatewayUsecase) UpdatePictureImage(filename string, sizes *domain.ImageSize, pic, user int) *domain.ErrorResponse {
+	req, _ := http.NewRequest(http.MethodPost, utils.PictureService+strings.Replace(utils.PictureImage, ":id", fmt.Sprint(pic), 1),
+		bytes.NewBuffer(utils.EncodeJSON(domain.Picture{ID: pic, Image: filename, Sizes: sizes})))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return &domain.ErrorResponse{Message: "Picture service is unavailable"}
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return &domain.ErrorResponse{Message: "Unable to update picture image"}
+	}
+	return nil
+}
