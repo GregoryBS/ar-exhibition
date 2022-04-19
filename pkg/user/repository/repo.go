@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	queryInsert      = `insert into user(login, password) values($1,$2) returning id, login;`
-	querySelectLogin = `select id, login, password from user where login = $1;`
+	queryInsert      = `insert into userы(login, password) values($1,$2) returning id, login;`
+	querySelectLogin = `select id, login, password from users where login = $1;`
 )
 
 type UserRepository struct {
