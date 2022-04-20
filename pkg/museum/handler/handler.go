@@ -61,7 +61,17 @@ func (h *MuseumHandler) GetMuseums(ctx aero.Context) error {
 	if err != nil {
 		size = 10
 	}
-	content := h.u.GetMuseums(page, size)
+	var content *domain.Page
+	if user, err := strconv.Atoi(ctx.Request().Header(utils.UserHeader)); err == nil {
+		items := h.u.GetUserMuseums(user)
+		if items == nil {
+			ctx.SetStatus(http.StatusForbidden)
+			return ctx.JSON(nil)
+		}
+		content = &domain.Page{Items: items}
+	} else {
+		content = h.u.GetMuseums(page, size)
+	}
 	return ctx.JSON(content)
 }
 

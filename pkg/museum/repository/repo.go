@@ -15,6 +15,8 @@ const (
 	from museum where id = $1;`
 	querySelectByPage = `select id, name, image, image_height, image_width
 	from museum offset $1 limit $2;`
+	querySelectByUser = `select id, name, image, description, info, image_height, image_width
+	from museum where user_id = $1;`
 	querySelectSearch = `select id, name, image, image_height, image_width
 	from museum where lower(name) like lower($1);`
 	queryUpdatePopular = `update museum set popular = popular + 1 where id = $1;`
@@ -95,6 +97,27 @@ func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
 		result = append(result, row)
 	}
 	return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
+}
+
+func (repo *MuseumRepository) UserMuseums(user int) []interface{} {
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectByUser, user)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	result := make([]interface{}, 0)
+	for rows.Next() {
+		row := &domain.Museum{Sizes: &domain.ImageSize{}}
+		params := make(map[string]string, 0)
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Description, &params, &row.Sizes.Height, &row.Sizes.Width)
+		if err != nil {
+			return nil
+		}
+		row.Image = utils.ImageService + row.Image
+		result = append(result, row)
+	}
+	return result
 }
 
 func (repo *MuseumRepository) Search(name string) []*domain.Museum {

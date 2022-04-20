@@ -104,8 +104,16 @@ func (h *GatewayHandler) GetMuseum(ctx aero.Context) error {
 
 func (h *GatewayHandler) GetMuseums(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL
-	content := h.u.GetMuseums(url.RawQuery)
-	return ctx.JSON(content)
+	user := checkAuth(ctx.Request().Header("Authorization"))
+	content := h.u.GetMuseums(url.RawQuery, user)
+	if content != nil {
+		if user != nil {
+			return ctx.JSON(content.Items[0])
+		}
+		return ctx.JSON(content)
+	}
+	ctx.SetStatus(http.StatusNotFound)
+	return ctx.JSON(domain.ErrorResponse{Message: "Cannot find museums for request"})
 }
 
 func (h *GatewayHandler) GetExhibitions(ctx aero.Context) error {

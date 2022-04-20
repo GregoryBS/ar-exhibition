@@ -94,14 +94,21 @@ func (u *GatewayUsecase) GetMuseum(id int) (*domain.Museum, *domain.ErrorRespons
 	return museum, nil
 }
 
-func (u *GatewayUsecase) GetMuseums(params string) *domain.Page {
-	result := &domain.Page{}
-	resp, err := http.Get(utils.MuseumService + utils.BaseMuseumApi + "?" + params)
+func (u *GatewayUsecase) GetMuseums(params string, user *domain.User) *domain.Page {
+	req, _ := http.NewRequest(http.MethodGet, utils.MuseumService+utils.BaseMuseumApi+"?"+params, nil)
+	if user != nil {
+		req.Header.Set(utils.UserHeader, fmt.Sprint(user.ID))
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return result
+		return nil
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil
+	}
 
+	result := &domain.Page{}
 	utils.DecodeJSON(resp.Body, result)
 	return result
 }
