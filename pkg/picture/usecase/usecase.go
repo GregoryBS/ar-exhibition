@@ -61,3 +61,7 @@ func (u *PictureUsecase) Create(pic *domain.Picture, user int) *domain.Picture {
 func (u *PictureUsecase) UpdateImage(pic *domain.Picture, user int) *domain.Picture {
 	return u.repo.UpdateImage(pic, user)
 }
+
+func (u *PictureUsecase) Update(pic *domain.Picture, user int) *domain.Picture {
+	return u.repo.Update(pic, user)
+}
