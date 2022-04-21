@@ -115,6 +115,7 @@ func (repo *MuseumRepository) UserMuseums(user int) []interface{} {
 			return nil
 		}
 		row.Image = utils.ImageService + row.Image
+		row.Info = utils.MapJSON(params)
 		result = append(result, row)
 	}
 	return result
