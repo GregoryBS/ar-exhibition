@@ -308,6 +308,7 @@ func uploadImage(r *http.Request, path string) (string, *domain.ImageSize) {
 		return "", nil
 	}
 	size := &domain.ImageSize{Height: m.Bounds().Dy(), Width: m.Bounds().Dx()}
+	reader.Seek(0, 0)
 
 	filename := utils.RandString(32) + filepath.Ext(handler.Filename)
 	file, err := createFile(path, filename)
