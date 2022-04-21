@@ -323,3 +323,20 @@ func (u *GatewayUsecase) UpdatePictureImage(filename string, sizes *domain.Image
 	}
 	return nil
 }
+
+func (u *GatewayUsecase) UpdatePicture(picture *domain.Picture, user int) (*domain.Picture, error) {
+	req, _ := http.NewRequest(http.MethodPost, utils.PictureService+strings.Replace(utils.PictureID, ":id", fmt.Sprint(picture.ID), 1),
+		bytes.NewBuffer(utils.EncodeJSON(picture)))
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("Unable to update picture")
+	}
+	result := new(domain.Picture)
+	utils.DecodeJSON(resp.Body, result)
+	return result, nil
+}

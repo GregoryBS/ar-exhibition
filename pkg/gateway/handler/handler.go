@@ -48,6 +48,7 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Post(utils.GatewayApiMuseumImage, h.UpdateMuseumImage)
 		app.Post(utils.GatewayApiPictures, h.CreatePicture)
 		app.Post(utils.GatewayApiPictureImage, h.UpdatePictureImage)
+		app.Post(utils.GatewayApiPictureID, h.UpdatePicture)
 	}
 	return app
 }
@@ -332,4 +333,31 @@ func createFile(dir, name string) (*os.File, error) {
 	}
 	file, err := os.Create(dir + name)
 	return file, err
+}
+
+func (h *GatewayHandler) UpdatePicture(ctx aero.Context) error {
+	id, err := strconv.Atoi(ctx.Get("id"))
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
+	}
+
+	user := checkAuth(ctx.Request().Header("Authorization"))
+	if user == nil {
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
+	}
+
+	picture := new(domain.Picture)
+	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), picture); err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to update"})
+	}
+	picture.ID = id
+	picture, err = h.u.UpdatePicture(picture, user.ID)
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
+	}
+	return ctx.JSON(picture)
 }
