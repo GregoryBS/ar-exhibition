@@ -246,7 +246,6 @@ func (u *GatewayUsecase) GetPicturesFav(id string) []*domain.Picture {
 func (u *GatewayUsecase) CreateMuseum(museum *domain.Museum, user int) (*domain.Museum, error) {
 	req, _ := http.NewRequest(http.MethodPost, utils.MuseumService+utils.BaseMuseumApi,
 		bytes.NewBuffer(utils.EncodeJSON(museum)))
-	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -264,7 +263,6 @@ func (u *GatewayUsecase) CreateMuseum(museum *domain.Museum, user int) (*domain.
 func (u *GatewayUsecase) UpdateMuseum(museum *domain.Museum, user int) (*domain.Museum, error) {
 	req, _ := http.NewRequest(http.MethodPost, utils.MuseumService+strings.Replace(utils.MuseumID, ":id", fmt.Sprint(museum.ID), 1),
 		bytes.NewBuffer(utils.EncodeJSON(museum)))
-	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -282,7 +280,6 @@ func (u *GatewayUsecase) UpdateMuseum(museum *domain.Museum, user int) (*domain.
 func (u *GatewayUsecase) UpdateMuseumImage(filename string, sizes *domain.ImageSize, museum, user int) *domain.ErrorResponse {
 	req, _ := http.NewRequest(http.MethodPost, utils.MuseumService+strings.Replace(utils.MuseumImage, ":id", fmt.Sprint(museum), 1),
 		bytes.NewBuffer(utils.EncodeJSON(domain.Museum{ID: museum, Image: filename, Sizes: sizes})))
-	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -298,7 +295,6 @@ func (u *GatewayUsecase) UpdateMuseumImage(filename string, sizes *domain.ImageS
 func (u *GatewayUsecase) CreatePicture(pic *domain.Picture, user int) (*domain.Picture, error) {
 	req, _ := http.NewRequest(http.MethodPost, utils.PictureService+utils.BasePictureApi,
 		bytes.NewBuffer(utils.EncodeJSON(pic)))
-	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -316,7 +312,6 @@ func (u *GatewayUsecase) CreatePicture(pic *domain.Picture, user int) (*domain.P
 func (u *GatewayUsecase) UpdatePictureImage(filename string, sizes *domain.ImageSize, pic, user int) *domain.ErrorResponse {
 	req, _ := http.NewRequest(http.MethodPost, utils.PictureService+strings.Replace(utils.PictureImage, ":id", fmt.Sprint(pic), 1),
 		bytes.NewBuffer(utils.EncodeJSON(domain.Picture{ID: pic, Image: filename, Sizes: sizes})))
-	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

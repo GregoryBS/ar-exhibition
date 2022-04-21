@@ -60,8 +60,8 @@ func (h *GatewayHandler) GetMain(ctx aero.Context) error {
 func (h *GatewayHandler) GetPicture(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
-		resp := domain.ErrorResponse{Message: "id not a number"}
-		return ctx.JSON(resp)
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
 	picture, msg := h.u.GetPicture(id)
@@ -75,8 +75,8 @@ func (h *GatewayHandler) GetPicture(ctx aero.Context) error {
 func (h *GatewayHandler) GetExhibition(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
-		resp := domain.ErrorResponse{Message: "id not a number"}
-		return ctx.JSON(resp)
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
 	exhibition, msg := h.u.GetExhibition(id)
@@ -90,8 +90,8 @@ func (h *GatewayHandler) GetExhibition(ctx aero.Context) error {
 func (h *GatewayHandler) GetMuseum(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
-		resp := domain.ErrorResponse{Message: "id not a number"}
-		return ctx.JSON(resp)
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
 	museum, msg := h.u.GetMuseum(id)
@@ -182,6 +182,12 @@ func (h *GatewayHandler) CreateMuseum(ctx aero.Context) error {
 }
 
 func (h *GatewayHandler) UpdateMuseum(ctx aero.Context) error {
+	id, err := strconv.Atoi(ctx.Get("id"))
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
+	}
+
 	user := checkAuth(ctx.Request().Header("Authorization"))
 	if user == nil {
 		ctx.SetStatus(http.StatusForbidden)
@@ -193,7 +199,8 @@ func (h *GatewayHandler) UpdateMuseum(ctx aero.Context) error {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})
 	}
-	museum, err := h.u.UpdateMuseum(museum, user.ID)
+	museum.ID = id
+	museum, err = h.u.UpdateMuseum(museum, user.ID)
 	if err != nil {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
@@ -204,8 +211,8 @@ func (h *GatewayHandler) UpdateMuseum(ctx aero.Context) error {
 func (h *GatewayHandler) UpdateMuseumImage(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
-		resp := domain.ErrorResponse{Message: "id not a number"}
-		return ctx.JSON(resp)
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
@@ -249,8 +256,8 @@ func (h *GatewayHandler) CreatePicture(ctx aero.Context) error {
 func (h *GatewayHandler) UpdatePictureImage(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
-		resp := domain.ErrorResponse{Message: "id not a number"}
-		return ctx.JSON(resp)
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
@@ -273,7 +280,6 @@ func (h *GatewayHandler) UpdatePictureImage(ctx aero.Context) error {
 
 func checkAuth(header string) *domain.User {
 	req, _ := http.NewRequest(http.MethodGet, utils.UserService+utils.UserID, nil)
-	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", header)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
