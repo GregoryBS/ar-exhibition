@@ -14,15 +14,15 @@ import (
 
 const (
 	querySelectTop = `select id, name, image, height, width 
-	from picture order by popular desc limit $1;`
+	from picture where pic_show and exh_show and mus_show order by popular desc limit $1;`
 	querySelectByExh = `select id, name, image, height, width, video, video_size
-	from picture where exh_id = $1;`
+	from picture where exh_id = $1 and pic_show and exh_show and mus_show;`
 	querySelectOne = `select id, name, image, description, info, height, width
-	from picture where id = $1;`
+	from picture where id = $1 and pic_show and exh_show and mus_show;`
 	querySelectSearch = `select  id, name, image, height, width 
-	from picture where lower(name) like lower($1);`
+	from picture where lower(name) like lower($1) and pic_show and exh_show and mus_show;`
 	querySelectSearchID = `select  id, name, image, height, width 
-	from picture where lower(name) like lower($1) and exh_id = $2;`
+	from picture where lower(name) like lower($1) and exh_id = $2 and pic_show and exh_show and mus_show;`
 	queryUpdatePopular = `update picture set popular = popular + 1 where id = $1;`
 	queryInsert        = `insert into picture (name, description, info, height, width, user_id) values($1, $2, $3, $4, $5, $6) returning id;`
 	queryUpdate        = `update picture set name = $1, description = $2, info = $3%s where id = $4 and user_id = $5;`

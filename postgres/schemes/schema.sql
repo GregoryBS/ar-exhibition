@@ -8,7 +8,8 @@ create table museum
     image_height   int not null default 0,
     image_width    int not null default 0,
     popular        bigint not null default 0,
-    user_id        int not null default 0
+    user_id        int not null default 0,
+    mus_show       boolean not null default false
 );
 
 insert into museum(name, info, description, image, image_height, image_width) 
@@ -25,7 +26,9 @@ create table exhibition
     image_width  int not null,
     info         json not null default '{}',
     popular      bigint not null default 0,
-    user_id      int not null default 0
+    user_id      int not null default 0,
+    exh_show     boolean not null default false,
+    mus_show     boolean not null default false
 );
 
 insert into exhibition(museum_id, name, description, info, image, image_height, image_width) 
@@ -42,7 +45,10 @@ create table picture
     height      int not null default 0,
     width       int not null default 0,
     popular     bigint not null default 0,
-    user_id     int not null default 0
+    user_id     int not null default 0,
+    pic_show    boolean not null default false,
+    exh_show    boolean not null default false,
+    mus_show    boolean not null default false
 );
 
 insert into picture(exh_id, name, image, description, info, height, width) 

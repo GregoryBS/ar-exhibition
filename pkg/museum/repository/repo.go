@@ -10,15 +10,15 @@ import (
 
 const (
 	querySelectTop = `select id, name, image, image_height, image_width
-	from museum order by popular desc limit $1;`
+	from museum where mus_show order by popular desc limit $1;`
 	querySelectOne = `select id, name, image, description, info, image_height, image_width
-	from museum where id = $1;`
+	from museum where id = $1 and mus_show;`
 	querySelectByPage = `select id, name, image, image_height, image_width
-	from museum offset $1 limit $2;`
+	from museum where mus_show offset $1 limit $2;`
 	querySelectByUser = `select id, name, image, description, info, image_height, image_width
 	from museum where user_id = $1;`
 	querySelectSearch = `select id, name, image, image_height, image_width
-	from museum where lower(name) like lower($1);`
+	from museum where lower(name) like lower($1) and mus_show;`
 	queryUpdatePopular = `update museum set popular = popular + 1 where id = $1;`
 	queryInsert        = `insert into museum (name, user_id) values($1, $2) returning id;`
 	queryUpdate        = `update museum set name = $1, description = $2, info = $3 where id = $4 and user_id = $5;`

@@ -11,17 +11,17 @@ import (
 
 const (
 	querySelectTop = `select id, name, image, image_height, image_width, info
-	from exhibition order by popular desc;`
+	from exhibition where exh_show and mus_show order by popular desc;`
 	querySelectOne = `select id, name, image, description, info, image_height, image_width
-	from exhibition where id = $1;`
+	from exhibition where id = $1 and exh_show and mus_show;`
 	querySelectAll = `select id, name, image, image_height, image_width, info
-	from exhibition offset $1 limit $2;`
+	from exhibition where and exh_show and mus_show offset $1 limit $2;`
 	querySelectByMuseum = `select id, name, image, image_height, image_width, info
-	from exhibition where museum_id = $1;`
+	from exhibition where museum_id = $1 and exh_show and mus_show;`
 	querySelectSearch = `select id, name, image, image_height, image_width, info
-	from exhibition where lower(name) like lower($1);`
+	from exhibition where lower(name) like lower($1) and exh_show and mus_show;`
 	querySelectSearchID = `select id, name, image, image_height, image_width, info
-	from exhibition where lower(name) like lower($1) and museum_id = $2;`
+	from exhibition where lower(name) like lower($1) and museum_id = $2 and exh_show and mus_show;`
 	queryUpdatePopular = `update exhibition set popular = popular + 1 where id = $1;`
 )
 

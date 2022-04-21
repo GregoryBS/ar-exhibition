@@ -27,7 +27,8 @@ func Logging(next aero.Handler) aero.Handler {
 	return func(ctx aero.Context) error {
 		start := time.Now()
 		err := next(ctx)
-		fmt.Printf("%s %s %d %s\n", ctx.Request().Method(), ctx.Path(), ctx.Status(), time.Since(start))
+		end := time.Now()
+		fmt.Println(end, ctx.Request().Method(), ctx.Request().Internal().RequestURI, ctx.Status(), end.Sub(start))
 		return err
 	}
 }
