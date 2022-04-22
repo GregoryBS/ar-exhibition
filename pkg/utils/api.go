@@ -50,6 +50,7 @@ const (
 	BasePictureApi      = "/api/v1/pictures"
 	PictureID           = BasePictureApi + "/:id"
 	PictureImage        = PictureID + "/images"
+	PictureVideo        = PictureID + "/videos"
 	PictureByExhibition = BasePictureApi + "?exhibitionID="
 	PictureByIDs        = BasePictureApi + "?id="
 	BasePictureSearch   = BasePictureApi + "/search"

@@ -37,6 +37,7 @@ type Picture struct {
 	Info        []*Param   `json:"info,omitempty"`
 	Video       string     `json:"video,omitempty"`
 	VideoSize   string     `json:"videoSize,omitempty"`
+	Show        int        `json:"show,omitempty"`
 }
 
 type Exhibition struct {
