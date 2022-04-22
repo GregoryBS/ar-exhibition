@@ -243,6 +243,20 @@ func (u *GatewayUsecase) GetPicturesFav(id string) []*domain.Picture {
 	return result
 }
 
+func (u *GatewayUsecase) GetPicturesUser(user int) []*domain.Picture {
+	req, _ := http.NewRequest(http.MethodGet, utils.PictureService+utils.BasePictureApi, nil)
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+
+	result := make([]*domain.Picture, 0)
+	utils.DecodeJSON(resp.Body, &result)
+	return result
+}
+
 func (u *GatewayUsecase) CreateMuseum(museum *domain.Museum, user int) (*domain.Museum, error) {
 	req, _ := http.NewRequest(http.MethodPost, utils.MuseumService+utils.BaseMuseumApi,
 		bytes.NewBuffer(utils.EncodeJSON(museum)))

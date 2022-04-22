@@ -150,8 +150,11 @@ func (h *GatewayHandler) GetPictures(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
 	ids := url.Get("id")
 	exhibition := url.Get("exhibitionID")
+	user := checkAuth(ctx.Request().Header("Authorization"))
 	var pictures []*domain.Picture
-	if exhibition != "" {
+	if user != nil {
+		pictures = h.u.GetPicturesUser(user.ID)
+	} else if exhibition != "" {
 		pictures = h.u.GetPicturesExh(exhibition)
 	} else {
 		pictures = h.u.GetPicturesFav(ids)
