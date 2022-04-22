@@ -29,6 +29,7 @@ func ConfigureExhibition(app *aero.Application, handlers interface{}) *aero.Appl
 		app.Get(utils.BaseExhibitionApi, h.GetExhibitions)
 		app.Get(utils.ExhibitionID, h.GetExhibitionID)
 		app.Get(utils.BaseExhibitionSearch, h.Search)
+		app.Post(utils.ExhibitionShow, h.Show)
 	}
 	return app
 }
@@ -79,4 +80,13 @@ func (h *ExhibitionHandler) Search(ctx aero.Context) error {
 		content = h.u.Search(name, filter)
 	}
 	return ctx.JSON(content)
+}
+
+func (h *ExhibitionHandler) Show(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
+	err := h.u.Show(user)
+	if err != nil {
+		ctx.SetStatus(http.StatusForbidden)
+	}
+	return ctx.JSON(nil)
 }

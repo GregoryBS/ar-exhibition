@@ -23,6 +23,7 @@ const (
 	querySelectSearchID = `select id, name, image, image_height, image_width, info
 	from exhibition where lower(name) like lower($1) and museum_id = $2 and exh_show and mus_show;`
 	queryUpdatePopular = `update exhibition set popular = popular + 1 where id = $1;`
+	queryShow          = `update exhibition set mus_show = not mus_show where user_id = $1;`
 )
 
 const (
@@ -236,4 +237,12 @@ func (repo *ExhibitionRepository) SearchID(name string, museumID int, filter str
 		}
 	}
 	return result
+}
+
+func (repo *ExhibitionRepository) Show(user int) error {
+	_, err := repo.db.Pool.Exec(context.Background(), queryShow, user)
+	if err != nil {
+		return err
+	}
+	return nil
 }
