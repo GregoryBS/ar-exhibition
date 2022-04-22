@@ -16,7 +16,7 @@ const (
 	from museum where id = $1 and mus_show;`
 	querySelectByPage = `select id, name, image, image_height, image_width
 	from museum where mus_show offset $1 limit $2;`
-	querySelectByUser = `select id, name, image, description, info, image_height, image_width
+	querySelectByUser = `select id, name, image, description, info, image_height, image_width, mus_show
 	from museum where user_id = $1;`
 	querySelectSearch = `select id, name, image, image_height, image_width
 	from museum where lower(name) like lower($1) and mus_show;`
@@ -112,9 +112,15 @@ func (repo *MuseumRepository) UserMuseums(user int) []interface{} {
 	for rows.Next() {
 		row := &domain.Museum{Sizes: &domain.ImageSize{}}
 		params := make(map[string]string, 0)
-		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Description, &params, &row.Sizes.Height, &row.Sizes.Width)
+		flag := false
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Description, &params, &row.Sizes.Height, &row.Sizes.Width, &flag)
 		if err != nil {
 			return nil
+		}
+		if flag {
+			row.Show = 1
+		} else {
+			row.Show = -1
 		}
 		row.Image = utils.ImageService + row.Image
 		row.Info = utils.MapJSON(params)

@@ -18,6 +18,7 @@ type Museum struct {
 	Image       string        `json:"picture,omitempty"`
 	Sizes       *ImageSize    `json:"pictureSize,omitempty"`
 	Exhibitions []*Exhibition `json:"exhibitions,omitempty"`
+	Show        int           `json:"show,omitempty"`
 }
 
 type Page struct {
