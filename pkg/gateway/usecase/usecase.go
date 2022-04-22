@@ -340,3 +340,39 @@ func (u *GatewayUsecase) UpdatePicture(picture *domain.Picture, user int) (*doma
 	utils.DecodeJSON(resp.Body, result)
 	return result, nil
 }
+
+func (u *GatewayUsecase) ShowMuseum(museum, user int) error {
+	req, _ := http.NewRequest(http.MethodPost, utils.MuseumService+strings.Replace(utils.MuseumShow, ":id", fmt.Sprint(museum), 1), nil)
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Unable to publish museum")
+	}
+
+	req, _ = http.NewRequest(http.MethodPost, utils.ExhibitionService+utils.ExhibitionShow, nil)
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Unable to publish museum exhibitions")
+	}
+
+	req, _ = http.NewRequest(http.MethodPost, utils.PictureService+utils.PictureShow, nil)
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Unable to publish museum pictures")
+	}
+	return nil
+}

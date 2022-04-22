@@ -49,6 +49,7 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Post(utils.GatewayApiPictures, h.CreatePicture)
 		app.Post(utils.GatewayApiPictureImage, h.UpdatePictureImage)
 		app.Post(utils.GatewayApiPictureID, h.UpdatePicture)
+		app.Post(utils.GatewayApiMuseumShow, h.ShowMuseum)
 	}
 	return app
 }
@@ -361,4 +362,25 @@ func (h *GatewayHandler) UpdatePicture(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
 	return ctx.JSON(picture)
+}
+
+func (h *GatewayHandler) ShowMuseum(ctx aero.Context) error {
+	id, err := strconv.Atoi(ctx.Get("id"))
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
+	}
+
+	user := checkAuth(ctx.Request().Header("Authorization"))
+	if user == nil {
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
+	}
+
+	err = h.u.ShowMuseum(id, user.ID)
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
+	}
+	return nil
 }
