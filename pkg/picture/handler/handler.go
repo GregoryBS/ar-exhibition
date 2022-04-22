@@ -32,6 +32,7 @@ func ConfigurePicture(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Post(utils.BasePictureApi, h.Create)
 		app.Post(utils.PictureImage, h.UpdateImage)
 		app.Post(utils.PictureID, h.Update)
+		app.Post(utils.PictureShow, h.Show)
 	}
 	return app
 }
@@ -125,4 +126,19 @@ func (h *PictureHandler) Update(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to update"})
 	}
 	return ctx.JSON(picture)
+}
+
+func (h *PictureHandler) Show(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
+	url := ctx.Request().Internal().URL.Query()
+	exhibitionID, err := strconv.Atoi(url.Get("exhibitionID"))
+	if err == nil {
+		err = h.u.ShowExh(exhibitionID, user)
+	} else {
+		err = h.u.Show(user)
+	}
+	if err != nil {
+		ctx.SetStatus(http.StatusForbidden)
+	}
+	return ctx.JSON(nil)
 }

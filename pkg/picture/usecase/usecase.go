@@ -65,3 +65,11 @@ func (u *PictureUsecase) UpdateImage(pic *domain.Picture, user int) *domain.Pict
 func (u *PictureUsecase) Update(pic *domain.Picture, user int) *domain.Picture {
 	return u.repo.Update(pic, user)
 }
+
+func (u *PictureUsecase) Show(user int) error {
+	return u.repo.Show(user)
+}
+
+func (u *PictureUsecase) ShowExh(exhibition, user int) error {
+	return u.repo.ShowExh(exhibition, user)
+}

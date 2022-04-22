@@ -6,10 +6,7 @@ import (
 	"ar_exhibition/pkg/utils"
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
-
-	"github.com/jackc/pgconn"
 )
 
 const (
@@ -25,8 +22,10 @@ const (
 	from picture where lower(name) like lower($1) and exh_id = $2 and pic_show and exh_show and mus_show;`
 	queryUpdatePopular = `update picture set popular = popular + 1 where id = $1;`
 	queryInsert        = `insert into picture (name, description, info, height, width, user_id) values($1, $2, $3, $4, $5, $6) returning id;`
-	queryUpdate        = `update picture set name = $1, description = $2, info = $3%s where id = $4 and user_id = $5;`
+	queryUpdate        = `update picture set name = $1, description = $2, info = $3, height = $6, width = $7 where id = $4 and user_id = $5;`
 	queryUpdateImage   = `update picture set image = $1 where id = $2 and user_id = $3;`
+	queryShow          = `update picture set mus_show = not mus_show where user_id = $1;`
+	queryShowExh       = `update picture set exh_show = not exh_show where exh_id = $1 and user_id = $2;`
 )
 
 type PictureRepository struct {
@@ -150,15 +149,8 @@ func (repo *PictureRepository) Create(picture *domain.Picture, user int) *domain
 	for _, v := range picture.Info {
 		params[v.Type] = v.Value
 	}
-	var height, width int
-	if prm, ok := params["Размер"]; ok {
-		size := strings.Split(prm, " x ")
-		h, _ := strconv.ParseFloat(size[0], 64)
-		w, _ := strconv.ParseFloat(size[1], 64)
-		height = int(h)
-		width = int(w)
-	}
-	row := repo.db.Pool.QueryRow(context.Background(), queryInsert, picture.Name, picture.Description, params, height, width, user)
+	row := repo.db.Pool.QueryRow(context.Background(), queryInsert,
+		picture.Name, picture.Description, params, picture.Sizes.Height, picture.Sizes.Width, user)
 	err := row.Scan(&picture.ID)
 	if err != nil {
 		return nil
@@ -171,18 +163,8 @@ func (repo *PictureRepository) Update(picture *domain.Picture, user int) *domain
 	for _, v := range picture.Info {
 		params[v.Type] = v.Value
 	}
-	var result pgconn.CommandTag
-	var err error
-	if prm, ok := params["Размер"]; ok {
-		size := strings.Split(prm, " x ")
-		h, _ := strconv.ParseFloat(size[0], 64)
-		w, _ := strconv.ParseFloat(size[1], 64)
-		sql := fmt.Sprintf(queryUpdate, ", height = $6, width = $7")
-		result, err = repo.db.Pool.Exec(context.Background(), sql, picture.Name, picture.Description, params, picture.ID, user, int(h), int(w))
-	} else {
-		sql := fmt.Sprintf(queryUpdate, "")
-		result, err = repo.db.Pool.Exec(context.Background(), sql, picture.Name, picture.Description, params, picture.ID, user)
-	}
+	result, err := repo.db.Pool.Exec(context.Background(), queryUpdate,
+		picture.Name, picture.Description, params, picture.ID, user, picture.Sizes.Height, picture.Sizes.Width)
 	if err != nil || result.RowsAffected() == 0 {
 		return nil
 	}
@@ -195,4 +177,20 @@ func (repo *PictureRepository) UpdateImage(picture *domain.Picture, user int) *d
 		return nil
 	}
 	return picture
+}
+
+func (repo *PictureRepository) Show(user int) error {
+	_, err := repo.db.Pool.Exec(context.Background(), queryShow, user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *PictureRepository) ShowExh(exhibiton, user int) error {
+	_, err := repo.db.Pool.Exec(context.Background(), queryShowExh, exhibiton, user)
+	if err != nil {
+		return err
+	}
+	return nil
 }
