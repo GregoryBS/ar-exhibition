@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 const (
@@ -54,7 +55,7 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 		if err != nil {
 			return result
 		}
-		row.Image = utils.ImageService + row.Image
+		row.Image = utils.SplitPic(row.Image)[0]
 		result = append(result, row)
 	}
 	return result
@@ -68,7 +69,7 @@ func (repo *MuseumRepository) MuseumID(id int) (*domain.Museum, error) {
 	if err != nil {
 		return nil, err
 	}
-	museum.Image = utils.ImageService + museum.Image
+	museum.Image = strings.Join(utils.SplitPic(museum.Image), ",")
 	museum.Info = utils.MapJSON(params)
 	return museum, nil
 }
@@ -95,7 +96,7 @@ func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
 		if err != nil {
 			return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 		}
-		row.Image = utils.ImageService + row.Image
+		row.Image = utils.SplitPic(row.Image)[0]
 		result = append(result, row)
 	}
 	return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
@@ -122,7 +123,7 @@ func (repo *MuseumRepository) UserMuseums(user int) []interface{} {
 		} else {
 			row.Show = -1
 		}
-		row.Image = utils.ImageService + row.Image
+		row.Image = strings.Join(utils.SplitPic(row.Image), ",")
 		row.Info = utils.MapJSON(params)
 		result = append(result, row)
 	}
@@ -143,7 +144,7 @@ func (repo *MuseumRepository) Search(name string) []*domain.Museum {
 		if err != nil {
 			return result
 		}
-		row.Image = utils.ImageService + row.Image
+		row.Image = utils.SplitPic(row.Image)[0]
 		result = append(result, row)
 	}
 	return result

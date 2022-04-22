@@ -6,6 +6,7 @@ import (
 	"ar_exhibition/pkg/utils"
 	"context"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -58,7 +59,7 @@ func (repo *ExhibitionRepository) ExhibitionTop(limit int) []*domain.Exhibition 
 		if err != nil {
 			return result
 		}
-		row.Image = utils.ImageService + row.Image
+		row.Image = utils.SplitPic(row.Image)[0]
 		from, _ := time.Parse(timeLayout, params[utils.ExhibitionStart])
 		to, _ := time.Parse(timeLayout, params[utils.ExhibitionEnd])
 		t := time.Now()
@@ -78,7 +79,7 @@ func (repo *ExhibitionRepository) ExhibitionID(id int) (*domain.Exhibition, erro
 	if err != nil {
 		return nil, err
 	}
-	exh.Image = utils.ImageService + exh.Image
+	exh.Image = strings.Join(utils.SplitPic(exh.Image), ",")
 	exh.Info = utils.MapJSON(params)
 	return exh, nil
 }
@@ -105,7 +106,7 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int, filter string) 
 		if err != nil {
 			return result
 		}
-		row.Image = utils.ImageService + row.Image
+		row.Image = utils.SplitPic(row.Image)[0]
 		from, _ := time.Parse(timeLayout, params[utils.ExhibitionStart])
 		to, _ := time.Parse(timeLayout, params[utils.ExhibitionEnd])
 		switch filter {
@@ -143,7 +144,7 @@ func (repo *ExhibitionRepository) AllExhibitions(page, size int, filter string) 
 		if err != nil {
 			return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 		}
-		row.Image = utils.ImageService + row.Image
+		row.Image = utils.SplitPic(row.Image)[0]
 		from, _ := time.Parse(timeLayout, params[utils.ExhibitionStart])
 		to, _ := time.Parse(timeLayout, params[utils.ExhibitionEnd])
 		switch filter {
@@ -180,7 +181,7 @@ func (repo *ExhibitionRepository) Search(name, filter string) []*domain.Exhibiti
 		if err != nil {
 			return result
 		}
-		row.Image = utils.ImageService + row.Image
+		row.Image = utils.SplitPic(row.Image)[0]
 		from, _ := time.Parse(timeLayout, params[utils.ExhibitionStart])
 		to, _ := time.Parse(timeLayout, params[utils.ExhibitionEnd])
 		switch filter {
@@ -217,7 +218,7 @@ func (repo *ExhibitionRepository) SearchID(name string, museumID int, filter str
 		if err != nil {
 			return result
 		}
-		row.Image = utils.ImageService + row.Image
+		row.Image = utils.SplitPic(row.Image)[0]
 		from, _ := time.Parse(timeLayout, params[utils.ExhibitionStart])
 		to, _ := time.Parse(timeLayout, params[utils.ExhibitionEnd])
 		switch filter {
