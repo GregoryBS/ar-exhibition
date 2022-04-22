@@ -5,6 +5,7 @@ import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/utils"
 	"context"
+	"errors"
 	"fmt"
 )
 
@@ -23,6 +24,7 @@ const (
 	queryInsert        = `insert into museum (name, user_id) values($1, $2) returning id;`
 	queryUpdate        = `update museum set name = $1, description = $2, info = $3 where id = $4 and user_id = $5;`
 	queryUpdateImage   = `update museum set image = $1, image_height = $2, image_width = $3 where id = $4 and user_id = $5;`
+	queryShow          = `update museum set mus_show = not mus_show where id = $1 and user_id = $2;`
 )
 
 type MuseumRepository struct {
@@ -168,4 +170,14 @@ func (repo *MuseumRepository) UpdateImage(museum *domain.Museum, user int) *doma
 		return nil
 	}
 	return museum
+}
+
+func (repo *MuseumRepository) Show(id, user int) error {
+	result, err := repo.db.Pool.Exec(context.Background(), queryShow, id, user)
+	if err != nil {
+		return err
+	} else if result.RowsAffected() == 0 {
+		return errors.New("Museum not found")
+	}
+	return nil
 }

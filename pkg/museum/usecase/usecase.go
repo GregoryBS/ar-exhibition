@@ -52,3 +52,7 @@ func (u *MuseumUsecase) Update(museum *domain.Museum, user int) *domain.Museum {
 func (u *MuseumUsecase) UpdateImage(museum *domain.Museum, user int) *domain.Museum {
 	return u.repo.UpdateImage(museum, user)
 }
+
+func (u *MuseumUsecase) Show(id, user int) error {
+	return u.repo.Show(id, user)
+}
