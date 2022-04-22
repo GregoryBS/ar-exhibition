@@ -4,6 +4,7 @@ import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/gateway/usecase"
 	"ar_exhibition/pkg/utils"
+	"fmt"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
@@ -12,12 +13,14 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/aerogo/aero"
 )
 
 const (
-	PicsDir = "./pictures/"
+	PicsDir  = "./pictures/"
+	VideoDir = "./videos/"
 )
 
 type GatewayHandler struct {
@@ -66,7 +69,7 @@ func (h *GatewayHandler) GetPicture(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	picture, msg := h.u.GetPicture(id)
+	picture, msg := h.u.GetPicture(id, checkAuth(ctx.Request().Header("Authorization")))
 	if msg != nil {
 		ctx.SetStatus(http.StatusNotFound)
 		return ctx.JSON(msg)
@@ -226,7 +229,7 @@ func (h *GatewayHandler) UpdateMuseumImage(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
 
-	image, sizes := uploadImage(ctx.Request().Internal(), PicsDir)
+	image, sizes := uploadFiles(ctx.Request().Internal())
 	if image == "" {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload museum image"})
@@ -271,12 +274,37 @@ func (h *GatewayHandler) UpdatePictureImage(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
 
-	image, sizes := uploadImage(ctx.Request().Internal(), PicsDir)
+	image, sizes := uploadFiles(ctx.Request().Internal())
 	if image == "" {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload picture image"})
 	}
 	result := h.u.UpdatePictureImage(image, sizes, id, user.ID)
+	if result != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+	}
+	return ctx.JSON(result)
+}
+
+func (h *GatewayHandler) UpdatePictureVideo(ctx aero.Context) error {
+	id, err := strconv.Atoi(ctx.Get("id"))
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
+	}
+
+	user := checkAuth(ctx.Request().Header("Authorization"))
+	if user == nil {
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
+	}
+
+	video, _ := uploadFiles(ctx.Request().Internal())
+	if video == "" {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload picture image"})
+	}
+	result := h.u.UpdatePictureVideo(video, id, user.ID)
 	if result != nil {
 		ctx.SetStatus(http.StatusBadRequest)
 	}
@@ -299,33 +327,56 @@ func checkAuth(header string) *domain.User {
 	return user
 }
 
-func uploadImage(r *http.Request, path string) (string, *domain.ImageSize) {
-	r.ParseMultipartForm(10 << 20)
-	reader, handler, err := r.FormFile("image")
+func uploadFiles(r *http.Request) (string, *domain.ImageSize) {
+	mr, err := r.MultipartReader()
 	if err != nil {
 		return "", nil
 	}
-	defer reader.Close()
-
-	m, _, err := image.Decode(reader)
-	if err != nil {
-		return "", nil
+	var sizes *domain.ImageSize
+	files := make([]string, 0)
+	for {
+		part, err := mr.NextPart()
+		if err == io.EOF {
+			break
+		}
+		switch part.FormName() {
+		case "image":
+			filename := utils.RandString(32) + filepath.Ext(part.FileName())
+			file, err := createFile(PicsDir, filename)
+			if err != nil {
+				fmt.Println("Error while creating file:", err.Error())
+				continue
+			}
+			_, err = io.Copy(file, part)
+			if err == nil {
+				files = append(files, filename)
+				if sizes == nil {
+					file.Seek(0, 0)
+					m, _, err := image.Decode(file)
+					if err == nil {
+						sizes = &domain.ImageSize{Height: m.Bounds().Dy(), Width: m.Bounds().Dx()}
+					}
+				}
+				file.Close()
+			}
+		case "video":
+			filename := utils.RandString(32) + filepath.Ext(part.FileName())
+			file, err := createFile(VideoDir, filename)
+			if err != nil {
+				fmt.Println("Error while creating file:", err.Error())
+				return "", nil
+			}
+			defer file.Close()
+			_, err = io.Copy(file, part)
+			if err != nil {
+				return "", nil
+			}
+			return filename, nil
+		default:
+			continue
+		}
 	}
-	size := &domain.ImageSize{Height: m.Bounds().Dy(), Width: m.Bounds().Dx()}
-	reader.Seek(0, 0)
-
-	filename := utils.RandString(32) + filepath.Ext(handler.Filename)
-	file, err := createFile(path, filename)
-	if err != nil {
-		return "", nil
-	}
-	defer file.Close()
-
-	_, err = io.Copy(file, reader)
-	if err != nil {
-		return "", nil
-	}
-	return filename, size
+	return strings.Join(files, ","), sizes
 }
 
 func createFile(dir, name string) (*os.File, error) {

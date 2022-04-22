@@ -44,15 +44,21 @@ func (u *GatewayUsecase) GetMain() *domain.MainPage {
 	return &domain.MainPage{Museums: museums, Exhibitions: exhibitions, Pictures: pictures}
 }
 
-func (u *GatewayUsecase) GetPicture(id int) (*domain.Picture, *domain.ErrorResponse) {
-	picture := &domain.Picture{}
-	resp, err := http.Get(utils.PictureService + strings.Replace(utils.PictureID, ":id", fmt.Sprint(id), 1))
+func (u *GatewayUsecase) GetPicture(id int, user *domain.User) (*domain.Picture, *domain.ErrorResponse) {
+	req, _ := http.NewRequest(http.MethodGet, utils.PictureService+strings.Replace(utils.PictureID, ":id", fmt.Sprint(id), 1), nil)
+	if user != nil {
+		req.Header.Set(utils.UserHeader, fmt.Sprint(user.ID))
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, &domain.ErrorResponse{Message: err.Error()}
-	} else if resp.StatusCode != http.StatusOK {
-		return nil, &domain.ErrorResponse{Message: "Not found"}
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, &domain.ErrorResponse{Message: "Not found"}
+	}
+
+	picture := &domain.Picture{}
 	utils.DecodeJSON(resp.Body, picture)
 	return picture, nil
 }
@@ -334,6 +340,21 @@ func (u *GatewayUsecase) UpdatePictureImage(filename string, sizes *domain.Image
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return &domain.ErrorResponse{Message: "Unable to update picture image"}
+	}
+	return nil
+}
+
+func (u *GatewayUsecase) UpdatePictureVideo(filename string, pic, user int) *domain.ErrorResponse {
+	req, _ := http.NewRequest(http.MethodPost, utils.PictureService+strings.Replace(utils.PictureVideo, ":id", fmt.Sprint(pic), 1),
+		bytes.NewBuffer(utils.EncodeJSON(domain.Picture{ID: pic, Video: filename})))
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return &domain.ErrorResponse{Message: "Picture service is unavailable"}
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return &domain.ErrorResponse{Message: "Unable to update picture video"}
 	}
 	return nil
 }
