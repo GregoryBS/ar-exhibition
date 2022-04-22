@@ -51,6 +51,7 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Post(utils.GatewayApiMuseumImage, h.UpdateMuseumImage)
 		app.Post(utils.GatewayApiPictures, h.CreatePicture)
 		app.Post(utils.GatewayApiPictureImage, h.UpdatePictureImage)
+		app.Post(utils.GatewayApiPictureVideo, h.UpdatePictureVideo)
 		app.Post(utils.GatewayApiPictureID, h.UpdatePicture)
 		app.Post(utils.GatewayApiMuseumShow, h.ShowMuseum)
 	}
@@ -302,7 +303,7 @@ func (h *GatewayHandler) UpdatePictureVideo(ctx aero.Context) error {
 	video, _ := uploadFiles(ctx.Request().Internal())
 	if video == "" {
 		ctx.SetStatus(http.StatusBadRequest)
-		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload picture image"})
+		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload picture video"})
 	}
 	result := h.u.UpdatePictureVideo(video, id, user.ID)
 	if result != nil {

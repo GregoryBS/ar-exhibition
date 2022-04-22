@@ -14,6 +14,7 @@ const (
 	GatewayApiMain         = "/api/v1/"
 	GatewayApiPictureID    = "/api/v1/pictures/:id"
 	GatewayApiPictureImage = "/api/v1/pictures/:id/images"
+	GatewayApiPictureVideo = "/api/v1/pictures/:id/videos"
 	GatewayApiExhibitionID = "/api/v1/exhibitions/:id"
 	GatewayApiMuseumID     = "/api/v1/museums/:id"
 	GatewayApiMuseumImage  = "/api/v1/museums/:id/images"
