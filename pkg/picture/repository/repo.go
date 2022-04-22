@@ -18,6 +18,8 @@ const (
 	from picture where user_id = $1;`
 	querySelectOne = `select id, name, image, description, info, height, width
 	from picture where id = $1 and pic_show and exh_show and mus_show;`
+	querySelectOneByUser = `select id, name, image, description, info, height, width, video, video_size, pic_show
+	from picture where id = $1 and user_id = $2;`
 	querySelectSearch = `select  id, name, image, height, width 
 	from picture where lower(name) like lower($1) and pic_show and exh_show and mus_show;`
 	querySelectSearchID = `select  id, name, image, height, width 
@@ -26,6 +28,7 @@ const (
 	queryInsert        = `insert into picture (name, description, info, height, width, user_id) values($1, $2, $3, $4, $5, $6) returning id;`
 	queryUpdate        = `update picture set name = $1, description = $2, info = $3, height = $6, width = $7 where id = $4 and user_id = $5;`
 	queryUpdateImage   = `update picture set image = $1 where id = $2 and user_id = $3;`
+	queryUpdateVideo   = `update picture set video = $1 where id = $2 and user_id = $3;`
 	queryShow          = `update picture set mus_show = not mus_show where user_id = $1;`
 	queryShowExh       = `update picture set exh_show = not exh_show where exh_id = $1 and user_id = $2;`
 )
@@ -119,6 +122,25 @@ func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
 	return pic, nil
 }
 
+func (repo *PictureRepository) PictureIDUser(id, user int) (*domain.Picture, error) {
+	pic := &domain.Picture{Sizes: &domain.ImageSize{}}
+	params := make(map[string]string, 0)
+	flag := false
+	row := repo.db.Pool.QueryRow(context.Background(), querySelectOneByUser, id, user)
+	err := row.Scan(&pic.ID, &pic.Name, &pic.Image, &pic.Description, &params, &pic.Sizes.Height, &pic.Sizes.Width, &pic.Video, &pic.VideoSize, &flag)
+	if err != nil {
+		return nil, err
+	}
+	if flag {
+		pic.Show = 1
+	} else {
+		pic.Show = -1
+	}
+	pic.Image = strings.Join(utils.SplitPic(pic.Image), ",")
+	pic.Info = utils.MapJSON(params)
+	return pic, nil
+}
+
 func (repo *PictureRepository) UpdatePicturePopular(id int) {
 	_, err := repo.db.Pool.Exec(context.Background(), queryUpdatePopular, id)
 	if err != nil {
@@ -195,6 +217,14 @@ func (repo *PictureRepository) Update(picture *domain.Picture, user int) *domain
 
 func (repo *PictureRepository) UpdateImage(picture *domain.Picture, user int) *domain.Picture {
 	result, err := repo.db.Pool.Exec(context.Background(), queryUpdateImage, picture.Image, picture.ID, user)
+	if err != nil || result.RowsAffected() == 0 {
+		return nil
+	}
+	return picture
+}
+
+func (repo *PictureRepository) UpdateVideo(picture *domain.Picture, user int) *domain.Picture {
+	result, err := repo.db.Pool.Exec(context.Background(), queryUpdateVideo, picture.Video, picture.ID, user)
 	if err != nil || result.RowsAffected() == 0 {
 		return nil
 	}

@@ -30,12 +30,15 @@ func (u *PictureUsecase) GetPicturesByUser(user int) []*domain.Picture {
 	return u.repo.UserPictures(user)
 }
 
-func (u *PictureUsecase) GetPictureID(id int) (*domain.Picture, error) {
-	pic, err := u.repo.PictureID(id)
-	if err == nil {
-		u.repo.UpdatePicturePopular(id)
+func (u *PictureUsecase) GetPictureID(id, user int) (*domain.Picture, error) {
+	if user == 0 {
+		pic, err := u.repo.PictureID(id)
+		if err == nil {
+			u.repo.UpdatePicturePopular(id)
+		}
+		return pic, err
 	}
-	return pic, err
+	return u.repo.PictureIDUser(id, user)
 }
 
 func (u *PictureUsecase) Search(name string) []*domain.Picture {
@@ -64,6 +67,10 @@ func (u *PictureUsecase) Create(pic *domain.Picture, user int) *domain.Picture {
 
 func (u *PictureUsecase) UpdateImage(pic *domain.Picture, user int) *domain.Picture {
 	return u.repo.UpdateImage(pic, user)
+}
+
+func (u *PictureUsecase) UpdateVideo(pic *domain.Picture, user int) *domain.Picture {
+	return u.repo.UpdateVideo(pic, user)
 }
 
 func (u *PictureUsecase) Update(pic *domain.Picture, user int) *domain.Picture {
