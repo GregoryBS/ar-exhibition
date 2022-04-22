@@ -14,6 +14,8 @@ const (
 	from picture where pic_show and exh_show and mus_show order by popular desc limit $1;`
 	querySelectByExh = `select id, name, image, height, width, video, video_size
 	from picture where exh_id = $1 and pic_show and exh_show and mus_show;`
+	querySelectByUser = `select id, name, image, height, width
+	from picture where user_id = $1;`
 	querySelectOne = `select id, name, image, description, info, height, width
 	from picture where id = $1 and pic_show and exh_show and mus_show;`
 	querySelectSearch = `select  id, name, image, height, width 
@@ -38,6 +40,26 @@ func PictureRepo(db interface{}) interface{} {
 		return &PictureRepository{db: instance}
 	}
 	return nil
+}
+
+func (repo *PictureRepository) UserPictures(user int) []*domain.Picture {
+	result := make([]*domain.Picture, 0)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectByUser, user)
+	if err != nil {
+		return result
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		row := &domain.Picture{Sizes: &domain.ImageSize{}}
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		if err != nil {
+			return result
+		}
+		row.Image = utils.SplitPic(row.Image)[0]
+		result = append(result, row)
+	}
+	return result
 }
 
 func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Picture {

@@ -26,6 +26,10 @@ func (u *PictureUsecase) GetPicturesByExh(exhibition int) []*domain.Picture {
 	}
 }
 
+func (u *PictureUsecase) GetPicturesByUser(user int) []*domain.Picture {
+	return u.repo.UserPictures(user)
+}
+
 func (u *PictureUsecase) GetPictureID(id int) (*domain.Picture, error) {
 	pic, err := u.repo.PictureID(id)
 	if err == nil {

@@ -39,9 +39,11 @@ func ConfigurePicture(app *aero.Application, handlers interface{}) *aero.Applica
 
 func (h *PictureHandler) GetPictures(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
-	var pictures []*domain.Picture
 	ids := url.Get("id")
-	if ids == "" {
+	var pictures []*domain.Picture
+	if user, err := strconv.Atoi(ctx.Request().Header(utils.UserHeader)); err == nil {
+		pictures = h.u.GetPicturesByUser(user)
+	} else if ids == "" {
 		exhibitionID, err := strconv.Atoi(url.Get("exhibitionID"))
 		if err != nil {
 			exhibitionID = 0
