@@ -113,12 +113,16 @@ func (h *GatewayHandler) GetMuseum(ctx aero.Context) error {
 
 func (h *GatewayHandler) GetMuseums(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL
-	user := checkAuth(ctx.Request().Header("Authorization"))
-	content := h.u.GetMuseums("?"+url.RawQuery, user)
-	if content != nil {
-		if user != nil {
-			return ctx.JSON(content.Items[0])
+	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
+		museums := h.u.GetUserMuseums(user.ID)
+		if museums == nil {
+			ctx.SetStatus(http.StatusForbidden)
+			return ctx.JSON(domain.ErrorResponse{Message: "Cannot find museums for request"})
 		}
+		return ctx.JSON(museums[0])
+	}
+	content := h.u.GetMuseums("?" + url.RawQuery)
+	if content != nil {
 		return ctx.JSON(content)
 	}
 	ctx.SetStatus(http.StatusNotFound)
@@ -240,7 +244,7 @@ func (h *GatewayHandler) UpdateMuseumImage(ctx aero.Context) error {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload museum image"})
 	}
-	result := h.u.UpdateMuseumImage(image, sizes, id, user.ID)
+	result := h.u.UpdateMuseumImage(image, sizes.(*domain.ImageSize), id, user.ID)
 	if result != nil {
 		ctx.SetStatus(http.StatusBadRequest)
 	}
@@ -285,7 +289,7 @@ func (h *GatewayHandler) UpdatePictureImage(ctx aero.Context) error {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload picture image"})
 	}
-	result := h.u.UpdatePictureImage(image, sizes, id, user.ID)
+	result := h.u.UpdatePictureImage(image, sizes.(*domain.ImageSize), id, user.ID)
 	if result != nil {
 		ctx.SetStatus(http.StatusBadRequest)
 	}
@@ -305,12 +309,12 @@ func (h *GatewayHandler) UpdatePictureVideo(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
 
-	video, _ := uploadFiles(ctx.Request().Internal())
+	video, size := uploadFiles(ctx.Request().Internal())
 	if video == "" {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload picture video"})
 	}
-	result := h.u.UpdatePictureVideo(video, id, user.ID)
+	result := h.u.UpdatePictureVideo(video, size.(string), id, user.ID)
 	if result != nil {
 		ctx.SetStatus(http.StatusBadRequest)
 	}
@@ -333,12 +337,12 @@ func checkAuth(header string) *domain.User {
 	return user
 }
 
-func uploadFiles(r *http.Request) (string, *domain.ImageSize) {
+func uploadFiles(r *http.Request) (string, interface{}) {
 	mr, err := r.MultipartReader()
 	if err != nil {
 		return "", nil
 	}
-	var sizes *domain.ImageSize
+	var sizes interface{}
 	files := make([]string, 0)
 	for {
 		part, err := mr.NextPart()
@@ -377,7 +381,13 @@ func uploadFiles(r *http.Request) (string, *domain.ImageSize) {
 			if err != nil {
 				return "", nil
 			}
-			return filename, nil
+			files = append(files, filename)
+		case "video_size":
+			buf := make([]byte, 1024)
+			s, err := part.Read(buf)
+			if err == nil {
+				sizes = string(buf[:s])
+			}
 		default:
 			continue
 		}
@@ -457,7 +467,7 @@ func (h *GatewayHandler) CreateExhibition(ctx aero.Context) error {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
-	exhibition, err := h.u.CreateExhibition(exhibition, user)
+	exhibition, err := h.u.CreateExhibition(exhibition, user.ID)
 	if err != nil {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
@@ -510,7 +520,7 @@ func (h *GatewayHandler) UpdateExhibitionImage(ctx aero.Context) error {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload exhibition image"})
 	}
-	result := h.u.UpdateExhibitionImage(image, sizes, id, user.ID)
+	result := h.u.UpdateExhibitionImage(image, sizes.(*domain.ImageSize), id, user.ID)
 	if result != nil {
 		ctx.SetStatus(http.StatusBadRequest)
 	}

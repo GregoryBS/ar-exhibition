@@ -104,12 +104,25 @@ func (u *GatewayUsecase) GetMuseum(id int) (*domain.Museum, *domain.ErrorRespons
 	return museum, nil
 }
 
-func (u *GatewayUsecase) GetMuseums(params string, user *domain.User) *domain.Page {
-	req, _ := http.NewRequest(http.MethodGet, utils.MuseumService+utils.BaseMuseumApi+params, nil)
-	if user != nil {
-		req.Header.Set(utils.UserHeader, fmt.Sprint(user.ID))
-	}
+func (u *GatewayUsecase) GetUserMuseums(user int) []*domain.Museum {
+	req, _ := http.NewRequest(http.MethodGet, utils.MuseumService+utils.BaseMuseumApi, nil)
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil
+	}
+
+	result := make([]*domain.Museum, 0)
+	utils.DecodeJSON(resp.Body, result)
+	return result
+}
+
+func (u *GatewayUsecase) GetMuseums(params string) *domain.Page {
+	resp, err := http.Get(utils.MuseumService + utils.BaseMuseumApi + params)
 	if err != nil {
 		return nil
 	}
@@ -362,9 +375,9 @@ func (u *GatewayUsecase) UpdatePictureImage(filename string, sizes *domain.Image
 	return nil
 }
 
-func (u *GatewayUsecase) UpdatePictureVideo(filename string, pic, user int) *domain.ErrorResponse {
+func (u *GatewayUsecase) UpdatePictureVideo(filename, size string, pic, user int) *domain.ErrorResponse {
 	req, _ := http.NewRequest(http.MethodPost, utils.PictureService+strings.Replace(utils.PictureVideo, ":id", fmt.Sprint(pic), 1),
-		bytes.NewBuffer(utils.EncodeJSON(domain.Picture{ID: pic, Video: filename})))
+		bytes.NewBuffer(utils.EncodeJSON(domain.Picture{ID: pic, Video: filename, VideoSize: size})))
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -430,14 +443,14 @@ func (u *GatewayUsecase) ShowMuseum(museum, user int) error {
 	return nil
 }
 
-func (u *GatewayUsecase) CreateExhibition(exhibition *domain.Exhibition, user *domain.User) (*domain.Exhibition, error) {
-	museum := u.GetMuseums("", user)
+func (u *GatewayUsecase) CreateExhibition(exhibition *domain.Exhibition, user int) (*domain.Exhibition, error) {
+	museum := u.GetUserMuseums(user)
 	if museum == nil {
 		return nil, errors.New("Unable to create exhibition")
 	}
 
 	req, _ := http.NewRequest(http.MethodPost, utils.ExhibitionService+utils.BaseExhibitionApi,
-		bytes.NewBuffer(utils.EncodeJSON(domain.MuseumExhibition{Mus: museum.Items[0].(*domain.Museum), Exh: exhibition})))
+		bytes.NewBuffer(utils.EncodeJSON(domain.MuseumExhibition{Mus: museum[0], Exh: exhibition})))
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

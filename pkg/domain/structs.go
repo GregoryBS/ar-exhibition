@@ -48,6 +48,7 @@ type Exhibition struct {
 	Image       string     `json:"picture,omitempty"`
 	Sizes       *ImageSize `json:"pictureSize,omitempty"`
 	Pictures    []*Picture `json:"content,omitempty"`
+	Show        int        `json:"show,omitempty"`
 }
 
 type MainPage struct {

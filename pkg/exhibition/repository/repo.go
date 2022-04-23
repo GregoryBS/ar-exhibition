@@ -15,14 +15,14 @@ const (
 	from exhibition where exh_show and mus_show order by popular desc;`
 	querySelectOne = `select id, name, image, description, info, image_height, image_width
 	from exhibition where id = $1 and exh_show and mus_show;`
-	querySelectOneUser = `select id, name, image, description, info, image_height, image_width
+	querySelectOneUser = `select id, name, image, description, info, image_height, image_width, exh_show
 	from exhibition where id = $1 and user_id = $2;`
 	querySelectAll = `select id, name, image, image_height, image_width, info
-	from exhibition where and exh_show and mus_show offset $1 limit $2;`
+	from exhibition where exh_show and mus_show offset $1 limit $2;`
 	querySelectByMuseum = `select id, name, image, image_height, image_width, info
 	from exhibition where museum_id = $1 and exh_show and mus_show;`
 	querySelectByUser = `select id, name, image, image_height, image_width
-	from exhibition where museum_id = $1 and exh_show and mus_show;`
+	from exhibition where user_id = $1 and exh_show and mus_show;`
 	querySelectSearch = `select id, name, image, image_height, image_width, info
 	from exhibition where lower(name) like lower($1) and exh_show and mus_show;`
 	querySelectSearchID = `select id, name, image, image_height, image_width, info
@@ -115,10 +115,16 @@ func (repo *ExhibitionRepository) ExhibitionID(id int) (*domain.Exhibition, erro
 func (repo *ExhibitionRepository) ExhibitionIDUser(id, user int) (*domain.Exhibition, error) {
 	exh := &domain.Exhibition{Sizes: &domain.ImageSize{}}
 	params := make(map[string]string, 0)
+	flag := false
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOneUser, id, user)
-	err := row.Scan(&exh.ID, &exh.Name, &exh.Image, &exh.Description, &params, &exh.Sizes.Height, &exh.Sizes.Width)
+	err := row.Scan(&exh.ID, &exh.Name, &exh.Image, &exh.Description, &params, &exh.Sizes.Height, &exh.Sizes.Width, &flag)
 	if err != nil {
 		return nil, err
+	}
+	if flag {
+		exh.Show = 1
+	} else {
+		exh.Show = -1
 	}
 	exh.Image = strings.Join(utils.SplitPic(exh.Image), ",")
 	exh.Info = utils.MapJSON(params)

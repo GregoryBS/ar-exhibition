@@ -102,14 +102,14 @@ func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
 	return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 }
 
-func (repo *MuseumRepository) UserMuseums(user int) []interface{} {
+func (repo *MuseumRepository) UserMuseums(user int) []*domain.Museum {
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectByUser, user)
 	if err != nil {
 		return nil
 	}
 	defer rows.Close()
 
-	result := make([]interface{}, 0)
+	result := make([]*domain.Museum, 0)
 	for rows.Next() {
 		row := &domain.Museum{Sizes: &domain.ImageSize{}}
 		params := make(map[string]string, 0)

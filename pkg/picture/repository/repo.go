@@ -28,7 +28,7 @@ const (
 	queryInsert        = `insert into picture (name, description, info, height, width, user_id) values($1, $2, $3, $4, $5, $6) returning id;`
 	queryUpdate        = `update picture set name = $1, description = $2, info = $3, height = $6, width = $7 where id = $4 and user_id = $5;`
 	queryUpdateImage   = `update picture set image = $1 where id = $2 and user_id = $3;`
-	queryUpdateVideo   = `update picture set video = $1 where id = $2 and user_id = $3;`
+	queryUpdateVideo   = `update picture set video = $1, video_size = $2 where id = $3 and user_id = $4;`
 	queryShow          = `update picture set mus_show = not mus_show where user_id = $1;`
 	queryShowExh       = `update picture set exh_show = not exh_show where exh_id = $1 and user_id = $2;`
 )
@@ -137,6 +137,9 @@ func (repo *PictureRepository) PictureIDUser(id, user int) (*domain.Picture, err
 		pic.Show = -1
 	}
 	pic.Image = strings.Join(utils.SplitPic(pic.Image), ",")
+	if pic.Video != "" {
+		pic.Video = utils.VideoService + pic.Video
+	}
 	pic.Info = utils.MapJSON(params)
 	return pic, nil
 }
@@ -224,7 +227,7 @@ func (repo *PictureRepository) UpdateImage(picture *domain.Picture, user int) *d
 }
 
 func (repo *PictureRepository) UpdateVideo(picture *domain.Picture, user int) *domain.Picture {
-	result, err := repo.db.Pool.Exec(context.Background(), queryUpdateVideo, picture.Video, picture.ID, user)
+	result, err := repo.db.Pool.Exec(context.Background(), queryUpdateVideo, picture.Video, picture.VideoSize, picture.ID, user)
 	if err != nil || result.RowsAffected() == 0 {
 		return nil
 	}
