@@ -29,12 +29,19 @@ func (u *ExhibitionUsecase) GetExhibitionsByMuseum(museum int, filter string) []
 	return result
 }
 
-func (u *ExhibitionUsecase) GetExhibitionID(id int) (*domain.Exhibition, error) {
-	exh, err := u.repo.ExhibitionID(id)
-	if err == nil {
-		u.repo.UpdateExhibitionPopular(id)
+func (u *ExhibitionUsecase) GetExhibitionsByUser(user int) []*domain.Exhibition {
+	return u.repo.ExhibitionsByUser(user)
+}
+
+func (u *ExhibitionUsecase) GetExhibitionID(id, user int) (*domain.Exhibition, error) {
+	if user == 0 {
+		exh, err := u.repo.ExhibitionID(id)
+		if err == nil {
+			u.repo.UpdateExhibitionPopular(id)
+		}
+		return exh, err
 	}
-	return exh, err
+	return u.repo.ExhibitionIDUser(id, user)
 }
 
 func (u *ExhibitionUsecase) GetExhibitions(page, size int, filter string) *domain.Page {

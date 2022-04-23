@@ -15,9 +15,13 @@ const (
 	from exhibition where exh_show and mus_show order by popular desc;`
 	querySelectOne = `select id, name, image, description, info, image_height, image_width
 	from exhibition where id = $1 and exh_show and mus_show;`
+	querySelectOneUser = `select id, name, image, description, info, image_height, image_width
+	from exhibition where id = $1 and user_id = $2;`
 	querySelectAll = `select id, name, image, image_height, image_width, info
 	from exhibition where and exh_show and mus_show offset $1 limit $2;`
 	querySelectByMuseum = `select id, name, image, image_height, image_width, info
+	from exhibition where museum_id = $1 and exh_show and mus_show;`
+	querySelectByUser = `select id, name, image, image_height, image_width
 	from exhibition where museum_id = $1 and exh_show and mus_show;`
 	querySelectSearch = `select id, name, image, image_height, image_width, info
 	from exhibition where lower(name) like lower($1) and exh_show and mus_show;`
@@ -74,10 +78,44 @@ func (repo *ExhibitionRepository) ExhibitionTop(limit int) []*domain.Exhibition 
 	return result
 }
 
+func (repo *ExhibitionRepository) ExhibitionsByUser(user int) []*domain.Exhibition {
+	result := make([]*domain.Exhibition, 0)
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectByUser, user)
+	if err != nil {
+		fmt.Println(err)
+		return result
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		row := &domain.Exhibition{Sizes: &domain.ImageSize{}}
+		err = rows.Scan(&row.ID, &row.Name, &row.Image, &row.Sizes.Height, &row.Sizes.Width)
+		if err != nil {
+			return result
+		}
+		row.Image = utils.SplitPic(row.Image)[0]
+		result = append(result, row)
+	}
+	return result
+}
+
 func (repo *ExhibitionRepository) ExhibitionID(id int) (*domain.Exhibition, error) {
 	exh := &domain.Exhibition{Sizes: &domain.ImageSize{}}
 	params := make(map[string]string, 0)
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
+	err := row.Scan(&exh.ID, &exh.Name, &exh.Image, &exh.Description, &params, &exh.Sizes.Height, &exh.Sizes.Width)
+	if err != nil {
+		return nil, err
+	}
+	exh.Image = strings.Join(utils.SplitPic(exh.Image), ",")
+	exh.Info = utils.MapJSON(params)
+	return exh, nil
+}
+
+func (repo *ExhibitionRepository) ExhibitionIDUser(id, user int) (*domain.Exhibition, error) {
+	exh := &domain.Exhibition{Sizes: &domain.ImageSize{}}
+	params := make(map[string]string, 0)
+	row := repo.db.Pool.QueryRow(context.Background(), querySelectOneUser, id, user)
 	err := row.Scan(&exh.ID, &exh.Name, &exh.Image, &exh.Description, &params, &exh.Sizes.Height, &exh.Sizes.Width)
 	if err != nil {
 		return nil, err

@@ -45,26 +45,32 @@ func (h *ExhibitionHandler) GetExhibitionTop(ctx aero.Context) error {
 func (h *ExhibitionHandler) GetExhibitions(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
 	filter := url.Get("filter")
-	museumID, err := strconv.Atoi(url.Get("museumID"))
-	if err != nil {
-		page, err := strconv.Atoi(url.Get("page"))
+	var exhibitions []*domain.Exhibition
+	if user, err := strconv.Atoi(ctx.Request().Header(utils.UserHeader)); err == nil {
+		exhibitions = h.u.GetExhibitionsByUser(user)
+	} else {
+		museumID, err := strconv.Atoi(url.Get("museumID"))
 		if err != nil {
-			page = 1
+			page, err := strconv.Atoi(url.Get("page"))
+			if err != nil {
+				page = 1
+			}
+			size, err := strconv.Atoi(url.Get("size"))
+			if err != nil {
+				size = 10
+			}
+			exhibitionPage := h.u.GetExhibitions(page, size, filter)
+			return ctx.JSON(exhibitionPage)
 		}
-		size, err := strconv.Atoi(url.Get("size"))
-		if err != nil {
-			size = 10
-		}
-		exhibitionPage := h.u.GetExhibitions(page, size, filter)
-		return ctx.JSON(exhibitionPage)
+		exhibitions = h.u.GetExhibitionsByMuseum(museumID, filter)
 	}
-	exhibitions := h.u.GetExhibitionsByMuseum(museumID, filter)
 	return ctx.JSON(exhibitions)
 }
 
 func (h *ExhibitionHandler) GetExhibitionID(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	id, _ := strconv.Atoi(ctx.Get("id"))
-	exhibition, err := h.u.GetExhibitionID(id)
+	exhibition, err := h.u.GetExhibitionID(id, user)
 	if err != nil {
 		ctx.SetStatus(http.StatusNotFound)
 		return ctx.JSON(nil)
