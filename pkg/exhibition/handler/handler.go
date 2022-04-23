@@ -30,6 +30,9 @@ func ConfigureExhibition(app *aero.Application, handlers interface{}) *aero.Appl
 		app.Get(utils.ExhibitionID, h.GetExhibitionID)
 		app.Get(utils.BaseExhibitionSearch, h.Search)
 		app.Post(utils.ExhibitionShow, h.Show)
+		app.Post(utils.BaseExhibitionApi, h.Create)
+		app.Post(utils.ExhibitionImage, h.UpdateImage)
+		app.Post(utils.ExhibitionID, h.Update)
 	}
 	return app
 }
@@ -89,4 +92,53 @@ func (h *ExhibitionHandler) Show(ctx aero.Context) error {
 		ctx.SetStatus(http.StatusForbidden)
 	}
 	return ctx.JSON(nil)
+}
+
+func (h *ExhibitionHandler) Create(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
+	data := new(domain.MuseumExhibition)
+	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), data); err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to create"})
+	}
+	museum, exhibition := data.Mus, data.Exh
+
+	exhibition = h.u.Create(exhibition, museum, user)
+	if exhibition == nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to create"})
+	}
+	return ctx.JSON(exhibition)
+}
+
+func (h *ExhibitionHandler) UpdateImage(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
+	exhibition := new(domain.Exhibition)
+	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), exhibition); err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
+	}
+
+	exhibition = h.u.UpdateImage(exhibition, user)
+	if exhibition == nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
+	}
+	return ctx.JSON(exhibition)
+}
+
+func (h *ExhibitionHandler) Update(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
+	exhibition := new(domain.Exhibition)
+	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), exhibition); err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
+	}
+
+	exhibition = h.u.Update(exhibition, user)
+	if exhibition == nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
+	}
+	return ctx.JSON(exhibition)
 }

@@ -25,6 +25,9 @@ const (
 	from exhibition where lower(name) like lower($1) and museum_id = $2 and exh_show and mus_show;`
 	queryUpdatePopular = `update exhibition set popular = popular + 1 where id = $1;`
 	queryShow          = `update exhibition set mus_show = not mus_show where user_id = $1;`
+	queryInsert        = `insert into exhibition (name, description, info, museum_id, mus_show, user_id) values($1, $2, $3, $4, $5, $6) returning id;`
+	queryUpdate        = `update exhibition set name = $1, description = $2, info = $3 where id = $4 and user_id = $5;`
+	queryUpdateImage   = `update exhibition set image = $1, image_height = $2, image_width = $3 where id = $4 and user_id = $5;`
 )
 
 const (
@@ -246,4 +249,42 @@ func (repo *ExhibitionRepository) Show(user int) error {
 		return err
 	}
 	return nil
+}
+
+func (repo *ExhibitionRepository) Create(exhibition *domain.Exhibition, museum *domain.Museum, user int) *domain.Exhibition {
+	params := make(map[string]string, 0)
+	for _, v := range exhibition.Info {
+		params[v.Type] = v.Value
+	}
+	flag := false
+	if museum.Show > 0 {
+		flag = true
+	}
+	row := repo.db.Pool.QueryRow(context.Background(), queryInsert, exhibition.Name, exhibition.Description, params, museum.ID, flag, user)
+	err := row.Scan(&exhibition.ID)
+	if err != nil {
+		return nil
+	}
+	return exhibition
+}
+
+func (repo *ExhibitionRepository) Update(exhibition *domain.Exhibition, user int) *domain.Exhibition {
+	params := make(map[string]string, 0)
+	for _, v := range exhibition.Info {
+		params[v.Type] = v.Value
+	}
+	result, err := repo.db.Pool.Exec(context.Background(), queryUpdate, exhibition.Name, exhibition.Description, params, exhibition.ID, user)
+	if err != nil || result.RowsAffected() == 0 {
+		return nil
+	}
+	return exhibition
+}
+
+func (repo *ExhibitionRepository) UpdateImage(exhibition *domain.Exhibition, user int) *domain.Exhibition {
+	result, err := repo.db.Pool.Exec(context.Background(), queryUpdateImage,
+		exhibition.Image, exhibition.Sizes.Height, exhibition.Sizes.Width, exhibition.ID, user)
+	if err != nil || result.RowsAffected() == 0 {
+		return nil
+	}
+	return exhibition
 }

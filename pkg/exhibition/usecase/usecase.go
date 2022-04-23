@@ -52,3 +52,15 @@ func (u *ExhibitionUsecase) SearchID(name string, museumID int, filter string) [
 func (u *ExhibitionUsecase) Show(user int) error {
 	return u.repo.Show(user)
 }
+
+func (u *ExhibitionUsecase) Create(exhibition *domain.Exhibition, museum *domain.Museum, user int) *domain.Exhibition {
+	return u.repo.Create(exhibition, museum, user)
+}
+
+func (u *ExhibitionUsecase) Update(exhibition *domain.Exhibition, user int) *domain.Exhibition {
+	return u.repo.Update(exhibition, user)
+}
+
+func (u *ExhibitionUsecase) UpdateImage(exhibition *domain.Exhibition, user int) *domain.Exhibition {
+	return u.repo.UpdateImage(exhibition, user)
+}
