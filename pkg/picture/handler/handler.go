@@ -34,6 +34,7 @@ func ConfigurePicture(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Post(utils.PictureVideo, h.UpdateVideo)
 		app.Post(utils.PictureID, h.Update)
 		app.Post(utils.PictureShow, h.Show)
+		app.Post(utils.PictureShowID, h.ShowID)
 	}
 	return app
 }
@@ -157,6 +158,16 @@ func (h *PictureHandler) Show(ctx aero.Context) error {
 	} else {
 		err = h.u.Show(user)
 	}
+	if err != nil {
+		ctx.SetStatus(http.StatusForbidden)
+	}
+	return ctx.JSON(nil)
+}
+
+func (h *PictureHandler) ShowID(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
+	id, _ := strconv.Atoi(ctx.Get("id"))
+	err := h.u.ShowID(id, user)
 	if err != nil {
 		ctx.SetStatus(http.StatusForbidden)
 	}

@@ -5,6 +5,7 @@ import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/utils"
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -31,6 +32,7 @@ const (
 	queryUpdateVideo   = `update picture set video = $1, video_size = $2 where id = $3 and user_id = $4;`
 	queryShow          = `update picture set mus_show = not mus_show where user_id = $1;`
 	queryShowExh       = `update picture set exh_show = not exh_show where exh_id = $1 and user_id = $2;`
+	queryShowID        = `update picture set pic_show = not pic_show where id = $1 and user_id = $2;`
 )
 
 type PictureRepository struct {
@@ -246,6 +248,16 @@ func (repo *PictureRepository) ShowExh(exhibiton, user int) error {
 	_, err := repo.db.Pool.Exec(context.Background(), queryShowExh, exhibiton, user)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (repo *PictureRepository) ShowID(id, user int) error {
+	result, err := repo.db.Pool.Exec(context.Background(), queryShowID, id, user)
+	if err != nil {
+		return err
+	} else if result.RowsAffected() == 0 {
+		return errors.New("Picture not found")
 	}
 	return nil
 }
