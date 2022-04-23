@@ -63,14 +63,18 @@ func (u *GatewayUsecase) GetPicture(id int, user *domain.User) (*domain.Picture,
 	return picture, nil
 }
 
-func (u *GatewayUsecase) GetExhibition(id int) (*domain.Exhibition, *domain.ErrorResponse) {
-	exhibition := &domain.Exhibition{}
-	resp, err := http.Get(utils.ExhibitionService + strings.Replace(utils.ExhibitionID, ":id", fmt.Sprint(id), 1))
+func (u *GatewayUsecase) GetExhibition(id int, user *domain.User) (*domain.Exhibition, *domain.ErrorResponse) {
+	req, _ := http.NewRequest(http.MethodGet, utils.ExhibitionService+strings.Replace(utils.ExhibitionID, ":id", fmt.Sprint(id), 1), nil)
+	if user != nil {
+		req.Header.Set(utils.UserHeader, fmt.Sprint(user.ID))
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, &domain.ErrorResponse{Message: err.Error()}
 	} else if resp.StatusCode != http.StatusOK {
 		return nil, &domain.ErrorResponse{Message: "Not found"}
 	}
+	exhibition := &domain.Exhibition{}
 	utils.DecodeJSON(resp.Body, exhibition)
 	resp.Body.Close()
 
@@ -139,6 +143,20 @@ func (u *GatewayUsecase) GetExhibitions(params string) *domain.Page {
 	defer resp.Body.Close()
 
 	utils.DecodeJSON(resp.Body, result)
+	return result
+}
+
+func (u *GatewayUsecase) GetUserExhibitions(user int) []*domain.Exhibition {
+	req, _ := http.NewRequest(http.MethodGet, utils.ExhibitionService+utils.BasePictureApi, nil)
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+
+	result := make([]*domain.Exhibition, 0)
+	utils.DecodeJSON(resp.Body, &result)
 	return result
 }
 

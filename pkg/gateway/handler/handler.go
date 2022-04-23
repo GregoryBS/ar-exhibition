@@ -88,7 +88,7 @@ func (h *GatewayHandler) GetExhibition(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	exhibition, msg := h.u.GetExhibition(id)
+	exhibition, msg := h.u.GetExhibition(id, checkAuth(ctx.Request().Header("Authorization")))
 	if msg != nil {
 		ctx.SetStatus(http.StatusNotFound)
 		return ctx.JSON(msg)
@@ -127,7 +127,9 @@ func (h *GatewayHandler) GetMuseums(ctx aero.Context) error {
 
 func (h *GatewayHandler) GetExhibitions(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL
-	if url.Query().Has("museumID") {
+	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
+		return ctx.JSON(h.u.GetUserExhibitions(user.ID))
+	} else if url.Query().Has("museumID") {
 		exhibitions := h.u.GetMuseumExhibitions(url.RawQuery)
 		return ctx.JSON(exhibitions)
 	}
