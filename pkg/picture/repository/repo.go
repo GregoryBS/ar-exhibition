@@ -33,6 +33,7 @@ const (
 	queryShow          = `update picture set mus_show = not mus_show where user_id = $1;`
 	queryShowExh       = `update picture set exh_show = not exh_show where exh_id = $1 and user_id = $2;`
 	queryShowID        = `update picture set pic_show = not pic_show where id = $1 and user_id = $2;`
+	queryDeleteID      = `delete from picture where id = $1 and user_id = $2;`
 )
 
 type PictureRepository struct {
@@ -254,6 +255,16 @@ func (repo *PictureRepository) ShowExh(exhibiton, user int) error {
 
 func (repo *PictureRepository) ShowID(id, user int) error {
 	result, err := repo.db.Pool.Exec(context.Background(), queryShowID, id, user)
+	if err != nil {
+		return err
+	} else if result.RowsAffected() == 0 {
+		return errors.New("Picture not found")
+	}
+	return nil
+}
+
+func (repo *PictureRepository) Delete(id, user int) error {
+	result, err := repo.db.Pool.Exec(context.Background(), queryDeleteID, id, user)
 	if err != nil {
 		return err
 	} else if result.RowsAffected() == 0 {

@@ -18,12 +18,12 @@ values('Museum', '{"Страна":"Россия","Город":"Москва","А
 create table exhibition
 (
     id           serial primary key,
-    museum_id    int not null,
+    museum_id    int not null default 0,
     name         text not null,
     description  text not null,
-    image        text not null,
-    image_height int not null,
-    image_width  int not null,
+    image        text not null default '',
+    image_height int not null default 0,
+    image_width  int not null default 0,
     info         json not null default '{}',
     popular      bigint not null default 0,
     user_id      int not null default 0,

@@ -59,6 +59,7 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Post(utils.GatewayApiExhibitionImage, h.UpdateExhibitionImage)
 		app.Post(utils.GatewayApiExhibitionShow, h.ShowExhibition)
 		app.Post(utils.GatewayApiPictureShow, h.ShowPicture)
+		app.Delete(utils.GatewayApiPictureID, h.DeletePicture)
 	}
 	return app
 }
@@ -569,4 +570,24 @@ func (h *GatewayHandler) UpdateExhibitionImage(ctx aero.Context) error {
 		ctx.SetStatus(http.StatusBadRequest)
 	}
 	return ctx.JSON(result)
+}
+
+func (h *GatewayHandler) DeletePicture(ctx aero.Context) error {
+	id, err := strconv.Atoi(ctx.Get("id"))
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
+	}
+
+	user := checkAuth(ctx.Request().Header("Authorization"))
+	if user == nil {
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
+	}
+	err = h.u.DeletePicture(id, user.ID)
+	if err != nil {
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
+	}
+	return nil
 }

@@ -88,3 +88,7 @@ func (u *PictureUsecase) ShowExh(exhibition, user int) error {
 func (u *PictureUsecase) ShowID(id, user int) error {
 	return u.repo.ShowID(id, user)
 }
+
+func (u *PictureUsecase) Delete(id, user int) error {
+	return u.repo.Delete(id, user)
+}

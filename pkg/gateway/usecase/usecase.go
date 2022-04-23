@@ -535,3 +535,17 @@ func (u *GatewayUsecase) UpdateExhibition(exhibition *domain.Exhibition, user in
 	utils.DecodeJSON(resp.Body, result)
 	return result, nil
 }
+
+func (u *GatewayUsecase) DeletePicture(id, user int) error {
+	req, _ := http.NewRequest(http.MethodDelete, utils.PictureService+strings.Replace(utils.PictureID, ":id", fmt.Sprint(id), 1), nil)
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Unable to delete picture")
+	}
+	return nil
+}
