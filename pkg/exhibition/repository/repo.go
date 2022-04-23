@@ -23,7 +23,7 @@ const (
 	querySelectByMuseum = `select id, name, image, image_height, image_width, info
 	from exhibition where museum_id = $1 and exh_show and mus_show;`
 	querySelectByUser = `select id, name, image, image_height, image_width
-	from exhibition where user_id = $1 and exh_show and mus_show;`
+	from exhibition where user_id = $1;`
 	querySelectSearch = `select id, name, image, image_height, image_width, info
 	from exhibition where lower(name) like lower($1) and exh_show and mus_show;`
 	querySelectSearchID = `select id, name, image, image_height, image_width, info
