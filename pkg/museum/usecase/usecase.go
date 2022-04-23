@@ -33,7 +33,7 @@ func (u *MuseumUsecase) GetMuseums(page, size int) *domain.Page {
 	return u.repo.Museums(page, size)
 }
 
-func (u *MuseumUsecase) GetUserMuseums(user int) []interface{} {
+func (u *MuseumUsecase) GetUserMuseums(user int) []*domain.Museum {
 	return u.repo.UserMuseums(user)
 }
 
