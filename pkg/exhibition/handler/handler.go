@@ -33,6 +33,7 @@ func ConfigureExhibition(app *aero.Application, handlers interface{}) *aero.Appl
 		app.Post(utils.BaseExhibitionApi, h.Create)
 		app.Post(utils.ExhibitionImage, h.UpdateImage)
 		app.Post(utils.ExhibitionID, h.Update)
+		app.Post(utils.ExhibitionShowID, h.ShowID)
 	}
 	return app
 }
@@ -94,6 +95,16 @@ func (h *ExhibitionHandler) Search(ctx aero.Context) error {
 func (h *ExhibitionHandler) Show(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	err := h.u.Show(user)
+	if err != nil {
+		ctx.SetStatus(http.StatusForbidden)
+	}
+	return ctx.JSON(nil)
+}
+
+func (h *ExhibitionHandler) ShowID(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
+	id, _ := strconv.Atoi(ctx.Get("id"))
+	err := h.u.ShowID(id, user)
 	if err != nil {
 		ctx.SetStatus(http.StatusForbidden)
 	}

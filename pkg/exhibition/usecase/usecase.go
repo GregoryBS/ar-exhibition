@@ -60,6 +60,10 @@ func (u *ExhibitionUsecase) Show(user int) error {
 	return u.repo.Show(user)
 }
 
+func (u *ExhibitionUsecase) ShowID(id, user int) error {
+	return u.repo.ShowID(id, user)
+}
+
 func (u *ExhibitionUsecase) Create(exhibition *domain.Exhibition, museum *domain.Museum, user int) *domain.Exhibition {
 	return u.repo.Create(exhibition, museum, user)
 }

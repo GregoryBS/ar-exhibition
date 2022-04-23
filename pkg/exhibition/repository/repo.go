@@ -5,6 +5,7 @@ import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/utils"
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -29,6 +30,7 @@ const (
 	from exhibition where lower(name) like lower($1) and museum_id = $2 and exh_show and mus_show;`
 	queryUpdatePopular = `update exhibition set popular = popular + 1 where id = $1;`
 	queryShow          = `update exhibition set mus_show = not mus_show where user_id = $1;`
+	queryShowID        = `update exhibition set exh_show = not exh_show where id = $1 and user_id = $2;`
 	queryInsert        = `insert into exhibition (name, description, info, museum_id, mus_show, user_id) values($1, $2, $3, $4, $5, $6) returning id;`
 	queryUpdate        = `update exhibition set name = $1, description = $2, info = $3 where id = $4 and user_id = $5;`
 	queryUpdateImage   = `update exhibition set image = $1, image_height = $2, image_width = $3 where id = $4 and user_id = $5;`
@@ -291,6 +293,16 @@ func (repo *ExhibitionRepository) Show(user int) error {
 	_, err := repo.db.Pool.Exec(context.Background(), queryShow, user)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (repo *ExhibitionRepository) ShowID(id, user int) error {
+	result, err := repo.db.Pool.Exec(context.Background(), queryShowID, id, user)
+	if err != nil {
+		return err
+	} else if result.RowsAffected() == 0 {
+		return errors.New("Exhibition not found")
 	}
 	return nil
 }
