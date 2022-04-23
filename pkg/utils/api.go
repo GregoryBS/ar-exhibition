@@ -24,6 +24,8 @@ const (
 	GatewayApiSearch          = "/api/v1/search"
 	GatewayApiPictures        = "/api/v1/pictures"
 	GatewayApiMuseumShow      = "/api/v1/museums/:id/public"
+	GatewayApiExhibitionShow  = "/api/v1/exhibitions/:id/public"
+	GatewayApiPictureShow     = "/api/v1/pictures/:id/public"
 )
 
 const (
