@@ -74,3 +74,8 @@ type User struct {
 	Museum   string `json:"museum,omitempty"`
 	Token    string `json:"token,omitempty"`
 }
+
+type MuseumExhibition struct {
+	Mus *Museum     `json:"museum,omitempty"`
+	Exh *Exhibition `json:"exhibition,omitempty"`
+}

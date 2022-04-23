@@ -11,18 +11,19 @@ const (
 )
 
 const (
-	GatewayApiMain         = "/api/v1/"
-	GatewayApiPictureID    = "/api/v1/pictures/:id"
-	GatewayApiPictureImage = "/api/v1/pictures/:id/images"
-	GatewayApiPictureVideo = "/api/v1/pictures/:id/videos"
-	GatewayApiExhibitionID = "/api/v1/exhibitions/:id"
-	GatewayApiMuseumID     = "/api/v1/museums/:id"
-	GatewayApiMuseumImage  = "/api/v1/museums/:id/images"
-	GatewayApiMuseums      = "/api/v1/museums"
-	GatewayApiExhibitions  = "/api/v1/exhibitions"
-	GatewayApiSearch       = "/api/v1/search"
-	GatewayApiPictures     = "/api/v1/pictures"
-	GatewayApiMuseumShow   = "/api/v1/museums/:id/public"
+	GatewayApiMain            = "/api/v1/"
+	GatewayApiPictureID       = "/api/v1/pictures/:id"
+	GatewayApiPictureImage    = "/api/v1/pictures/:id/images"
+	GatewayApiPictureVideo    = "/api/v1/pictures/:id/videos"
+	GatewayApiExhibitionID    = "/api/v1/exhibitions/:id"
+	GatewayApiExhibitionImage = "/api/v1/exhibitions/:id/images"
+	GatewayApiMuseumID        = "/api/v1/museums/:id"
+	GatewayApiMuseumImage     = "/api/v1/museums/:id/images"
+	GatewayApiMuseums         = "/api/v1/museums"
+	GatewayApiExhibitions     = "/api/v1/exhibitions"
+	GatewayApiSearch          = "/api/v1/search"
+	GatewayApiPictures        = "/api/v1/pictures"
+	GatewayApiMuseumShow      = "/api/v1/museums/:id/public"
 )
 
 const (
@@ -45,6 +46,7 @@ const (
 	ExhibitionSearchID   = BaseExhibitionSearch + "?name=%s&id=%d"
 	ExhibitionShow       = BaseExhibitionApi + "/public"
 	ExhibitionShowID     = ExhibitionID + "/public"
+	ExhibitionImage      = ExhibitionID + "/images"
 )
 
 const (
