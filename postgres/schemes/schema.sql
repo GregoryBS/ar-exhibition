@@ -37,7 +37,7 @@ values(1, 'Exhibition', 'Most beautiful exhibition in Moscow', '{"Начало":
 create table picture
 (
     id          serial primary key,
-    exh_id      int not null default 0,
+    exh_id      int[] not null default '{}',
     name        text not null,
     image       text not null default '',
     description text not null,
@@ -47,7 +47,7 @@ create table picture
     popular     bigint not null default 0,
     user_id     int not null default 0,
     pic_show    boolean not null default false,
-    exh_show    boolean not null default false,
+    exh_show    boolean[] not null default '{}',
     mus_show    boolean not null default false
 );
 

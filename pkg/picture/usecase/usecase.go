@@ -92,3 +92,16 @@ func (u *PictureUsecase) ShowID(id, user int) error {
 func (u *PictureUsecase) Delete(id, user int) error {
 	return u.repo.Delete(id, user)
 }
+
+func (u *PictureUsecase) UpdateForExhibition(exh *domain.Exhibition, mus *domain.Museum, user int) error {
+	err := u.repo.DeleteFromExhibition(exh.ID)
+	if err == nil {
+		for i := range exh.Pictures {
+			err = u.repo.AddToExhibition(exh.Pictures[i], exh, mus, user)
+			if err != nil {
+				break
+			}
+		}
+	}
+	return err
+}

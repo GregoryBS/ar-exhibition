@@ -36,6 +36,7 @@ func ConfigurePicture(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Post(utils.PictureShow, h.Show)
 		app.Post(utils.PictureShowID, h.ShowID)
 		app.Delete(utils.PictureID, h.Delete)
+		app.Post(utils.PicturesToExh, h.UpdateForExhibition)
 	}
 	return app
 }
@@ -181,6 +182,22 @@ func (h *PictureHandler) Delete(ctx aero.Context) error {
 	err := h.u.Delete(id, user)
 	if err != nil {
 		ctx.SetStatus(http.StatusForbidden)
+	}
+	return ctx.JSON(nil)
+}
+
+func (h *PictureHandler) UpdateForExhibition(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
+	data := new(domain.MuseumExhibition)
+	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), data); err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
+	}
+	museum, exhibition := data.Mus, data.Exh
+
+	err := h.u.UpdateForExhibition(exhibition, museum, user)
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
 	}
 	return ctx.JSON(nil)
 }

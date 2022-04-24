@@ -64,6 +64,7 @@ const (
 	PictureShow         = BasePictureApi + "/public"
 	PictureShowExh      = PictureShow + "?exhibitionID="
 	PictureShowID       = PictureID + "/public"
+	PicturesToExh       = BasePictureApi + "/exhibitions"
 )
 
 const (
