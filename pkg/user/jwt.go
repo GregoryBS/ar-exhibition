@@ -28,6 +28,8 @@ func CheckJWT(header string) int {
 			if identificator, err := claims.Get(Field); err == nil {
 				id = int(identificator.(float64))
 			}
+		} else {
+			id = -1
 		}
 	}
 	return id

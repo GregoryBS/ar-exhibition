@@ -95,9 +95,9 @@ func (h *UserHandler) Login(ctx aero.Context) error {
 
 func (h *UserHandler) Check(ctx aero.Context) error {
 	id := user.CheckJWT(ctx.Request().Header("Authorization"))
-	if id > 0 {
+	if id != 0 {
 		return ctx.JSON(domain.User{ID: id})
 	}
-	ctx.SetStatus(http.StatusForbidden)
+	ctx.SetStatus(http.StatusUnauthorized)
 	return ctx.JSON(domain.ErrorResponse{Message: "user not authorized"})
 }
