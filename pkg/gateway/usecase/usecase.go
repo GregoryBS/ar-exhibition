@@ -160,7 +160,7 @@ func (u *GatewayUsecase) GetExhibitions(params string) *domain.Page {
 }
 
 func (u *GatewayUsecase) GetUserExhibitions(user int) []*domain.Exhibition {
-	req, _ := http.NewRequest(http.MethodGet, utils.ExhibitionService+utils.BasePictureApi, nil)
+	req, _ := http.NewRequest(http.MethodGet, utils.ExhibitionService+utils.BaseExhibitionApi, nil)
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
