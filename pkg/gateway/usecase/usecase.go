@@ -501,6 +501,19 @@ func (u *GatewayUsecase) CreateExhibition(exhibition *domain.Exhibition, user in
 	}
 	result := new(domain.Exhibition)
 	utils.DecodeJSON(resp.Body, result)
+	resp.Body.Close()
+
+	req, _ = http.NewRequest(http.MethodPost, utils.PictureService+utils.PicturesToExh,
+		bytes.NewBuffer(utils.EncodeJSON(domain.MuseumExhibition{Mus: museum[0], Exh: result})))
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("Unable to create exhibition")
+	}
 	return result, nil
 }
 
@@ -533,6 +546,19 @@ func (u *GatewayUsecase) UpdateExhibition(exhibition *domain.Exhibition, user in
 	}
 	result := new(domain.Exhibition)
 	utils.DecodeJSON(resp.Body, result)
+	resp.Body.Close()
+
+	req, _ = http.NewRequest(http.MethodPost, utils.PictureService+utils.PicturesToExh,
+		bytes.NewBuffer(utils.EncodeJSON(domain.MuseumExhibition{Exh: result})))
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("Unable to update exhibition")
+	}
 	return result, nil
 }
 

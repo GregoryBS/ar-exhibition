@@ -117,12 +117,16 @@ func (h *GatewayHandler) GetMuseum(ctx aero.Context) error {
 func (h *GatewayHandler) GetMuseums(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL
 	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
-		museums := h.u.GetUserMuseums(user.ID)
-		if museums == nil {
-			ctx.SetStatus(http.StatusForbidden)
-			return ctx.JSON(domain.ErrorResponse{Message: "Cannot find museums for request"})
+		if user.ID > 0 {
+			museums := h.u.GetUserMuseums(user.ID)
+			if museums == nil {
+				ctx.SetStatus(http.StatusNotFound)
+				return ctx.JSON(domain.ErrorResponse{Message: "Cannot find museums for request"})
+			}
+			return ctx.JSON(museums[0])
 		}
-		return ctx.JSON(museums[0])
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Authorization error"})
 	}
 	content := h.u.GetMuseums("?" + url.RawQuery)
 	if content != nil {
@@ -135,7 +139,12 @@ func (h *GatewayHandler) GetMuseums(ctx aero.Context) error {
 func (h *GatewayHandler) GetExhibitions(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL
 	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
-		return ctx.JSON(h.u.GetUserExhibitions(user.ID))
+		if user.ID > 0 {
+			exhibitions := h.u.GetUserExhibitions(user.ID)
+			return ctx.JSON(exhibitions)
+		}
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Authorization error"})
 	} else if url.Query().Has("museumID") {
 		exhibitions := h.u.GetMuseumExhibitions(url.RawQuery)
 		return ctx.JSON(exhibitions)
@@ -166,10 +175,11 @@ func (h *GatewayHandler) GetPictures(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
 	ids := url.Get("id")
 	exhibition := url.Get("exhibitionID")
-	user := checkAuth(ctx.Request().Header("Authorization"))
 	var pictures []*domain.Picture
-	if user != nil {
-		pictures = h.u.GetPicturesUser(user.ID)
+	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
+		if user.ID > 0 {
+			pictures = h.u.GetPicturesUser(user.ID)
+		}
 	} else if exhibition != "" {
 		pictures = h.u.GetPicturesExh(exhibition)
 	} else {
