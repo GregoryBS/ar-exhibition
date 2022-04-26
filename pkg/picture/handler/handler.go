@@ -43,23 +43,21 @@ func ConfigurePicture(app *aero.Application, handlers interface{}) *aero.Applica
 
 func (h *PictureHandler) GetPictures(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
-	ids := url.Get("id")
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	var pictures []*domain.Picture
-	if user, err := strconv.Atoi(ctx.Request().Header(utils.UserHeader)); err == nil {
-		pictures = h.u.GetPicturesByUser(user)
-	} else if ids == "" {
-		exhibitionID, err := strconv.Atoi(url.Get("exhibitionID"))
-		if err != nil {
-			exhibitionID = 0
-		}
-		pictures = h.u.GetPicturesByExh(exhibitionID)
-	} else {
+	if url.Has("exhibitionID") {
+		exhibitionID, _ := strconv.Atoi(url.Get("exhibitionID"))
+		pictures = h.u.GetPicturesByExh(exhibitionID, user)
+	} else if url.Has("id") {
+		ids := url.Get("id")
 		id := make([]int, 0)
 		for _, str := range strings.Split(ids, ",") {
 			num, _ := strconv.Atoi(str)
 			id = append(id, num)
 		}
 		pictures = h.u.GetPicturesByIDs(id)
+	} else {
+		pictures = h.u.GetPicturesByUser(user)
 	}
 	return ctx.JSON(pictures)
 }

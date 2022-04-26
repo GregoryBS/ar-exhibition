@@ -16,7 +16,7 @@ const (
 	querySelectTop = `select id, name, image, height, width 
 	from picture where pic_show and '1' = any (exh_show) and mus_show order by popular desc limit $1;`
 	querySelectByExh = `select id, name, image, height, width, video, video_size
-	from picture where $1 = any (exh_id) and pic_show and '1' = any (exh_show) and mus_show;`
+	from picture where $1 = any (exh_id)%s;`
 	querySelectByUser = `select id, name, image, height, width
 	from picture where user_id = $1;`
 	querySelectOne = `select id, name, image, description, info, height, width
@@ -74,9 +74,15 @@ func (repo *PictureRepository) UserPictures(user int) []*domain.Picture {
 	return result
 }
 
-func (repo *PictureRepository) ExhibitionPictures(exhibition int) []*domain.Picture {
+func (repo *PictureRepository) ExhibitionPictures(exhibition, user int) []*domain.Picture {
 	result := make([]*domain.Picture, 0)
-	rows, err := repo.db.Pool.Query(context.Background(), querySelectByExh, exhibition)
+	var query string
+	if user > 0 {
+		query = fmt.Sprintf(querySelectByExh, "")
+	} else {
+		query = fmt.Sprintf(querySelectByExh, " and pic_show")
+	}
+	rows, err := repo.db.Pool.Query(context.Background(), query, exhibition)
 	if err != nil {
 		return result
 	}
