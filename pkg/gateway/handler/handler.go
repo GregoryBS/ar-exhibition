@@ -60,6 +60,7 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Post(utils.GatewayApiExhibitionShow, h.ShowExhibition)
 		app.Post(utils.GatewayApiPictureShow, h.ShowPicture)
 		app.Delete(utils.GatewayApiPictureID, h.DeletePicture)
+		app.Delete(utils.GatewayApiExhibitionID, h.DeleteExhibition)
 	}
 	return app
 }
@@ -174,14 +175,11 @@ func (h *GatewayHandler) Search(ctx aero.Context) error {
 func (h *GatewayHandler) GetPictures(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
 	ids := url.Get("id")
-	exhibition := url.Get("exhibitionID")
 	var pictures []*domain.Picture
 	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
 		if user.ID > 0 {
 			pictures = h.u.GetPicturesUser(user.ID)
 		}
-	} else if exhibition != "" {
-		pictures = h.u.GetPicturesExh(exhibition)
 	} else {
 		pictures = h.u.GetPicturesFav(ids)
 	}
@@ -200,7 +198,7 @@ func (h *GatewayHandler) CreateMuseum(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -232,7 +230,7 @@ func (h *GatewayHandler) UpdateMuseum(ctx aero.Context) error {
 	}
 	museum.ID = id
 	museum, err = h.u.UpdateMuseum(museum, user.ID)
-	if err != nil {
+	if err != nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
@@ -247,7 +245,7 @@ func (h *GatewayHandler) UpdateMuseumImage(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -272,7 +270,7 @@ func (h *GatewayHandler) CreatePicture(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -292,7 +290,7 @@ func (h *GatewayHandler) UpdatePictureImage(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -317,7 +315,7 @@ func (h *GatewayHandler) UpdatePictureVideo(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -428,7 +426,7 @@ func (h *GatewayHandler) UpdatePicture(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -455,7 +453,7 @@ func (h *GatewayHandler) ShowMuseum(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -476,7 +474,7 @@ func (h *GatewayHandler) ShowExhibition(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -497,7 +495,7 @@ func (h *GatewayHandler) ShowPicture(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -518,7 +516,7 @@ func (h *GatewayHandler) CreateExhibition(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -538,7 +536,7 @@ func (h *GatewayHandler) UpdateExhibition(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -565,7 +563,7 @@ func (h *GatewayHandler) UpdateExhibitionImage(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
@@ -590,11 +588,31 @@ func (h *GatewayHandler) DeletePicture(ctx aero.Context) error {
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
 	err = h.u.DeletePicture(id, user.ID)
+	if err != nil {
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
+	}
+	return nil
+}
+
+func (h *GatewayHandler) DeleteExhibition(ctx aero.Context) error {
+	id, err := strconv.Atoi(ctx.Get("id"))
+	if err != nil {
+		ctx.SetStatus(http.StatusBadRequest)
+		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
+	}
+
+	user := checkAuth(ctx.Request().Header("Authorization"))
+	if user == nil || user.ID <= 0 {
+		ctx.SetStatus(http.StatusForbidden)
+		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
+	}
+	err = h.u.DeleteExhibition(id, user.ID)
 	if err != nil {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})

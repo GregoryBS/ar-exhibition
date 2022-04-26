@@ -72,6 +72,7 @@ func (u *GatewayUsecase) GetExhibition(id int, user *domain.User) (*domain.Exhib
 	if err != nil {
 		return nil, &domain.ErrorResponse{Message: err.Error()}
 	} else if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
 		return nil, &domain.ErrorResponse{Message: "Not found"}
 	}
 	exhibition := &domain.Exhibition{}
@@ -79,7 +80,11 @@ func (u *GatewayUsecase) GetExhibition(id int, user *domain.User) (*domain.Exhib
 	resp.Body.Close()
 
 	exhibition.Pictures = make([]*domain.Picture, 0)
-	resp, err = http.Get(utils.PictureService + utils.PictureByExhibition + fmt.Sprint(exhibition.ID))
+	req, _ = http.NewRequest(http.MethodGet, utils.PictureService+utils.PictureByExhibition+fmt.Sprint(exhibition.ID), nil)
+	if user != nil {
+		req.Header.Set(utils.UserHeader, fmt.Sprint(user.ID))
+	}
+	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, &domain.ErrorResponse{Message: err.Error()}
 	} else if resp.StatusCode == http.StatusOK {
@@ -254,18 +259,6 @@ func (u *GatewayUsecase) SearchByID(param, params string) *domain.SearchPage {
 	default:
 		return nil
 	}
-}
-
-func (u *GatewayUsecase) GetPicturesExh(id string) []*domain.Picture {
-	resp, err := http.Get(utils.PictureService + utils.PictureByExhibition + id)
-	if err != nil {
-		return nil
-	}
-	defer resp.Body.Close()
-
-	result := make([]*domain.Picture, 0)
-	utils.DecodeJSON(resp.Body, &result)
-	return result
 }
 
 func (u *GatewayUsecase) GetPicturesFav(id string) []*domain.Picture {
@@ -572,6 +565,32 @@ func (u *GatewayUsecase) DeletePicture(id, user int) error {
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return errors.New("Unable to delete picture")
+	}
+	return nil
+}
+
+func (u *GatewayUsecase) DeleteExhibition(id, user int) error {
+	req, _ := http.NewRequest(http.MethodDelete, utils.ExhibitionService+strings.Replace(utils.ExhibitionID, ":id", fmt.Sprint(id), 1), nil)
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Unable to delete exhibition")
+	}
+
+	req, _ = http.NewRequest(http.MethodPost, utils.PictureService+utils.PicturesToExh,
+		bytes.NewBuffer(utils.EncodeJSON(domain.MuseumExhibition{Exh: &domain.Exhibition{ID: id}})))
+	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Unable to delete exhibition")
 	}
 	return nil
 }
