@@ -34,6 +34,7 @@ func ConfigureExhibition(app *aero.Application, handlers interface{}) *aero.Appl
 		app.Post(utils.ExhibitionImage, h.UpdateImage)
 		app.Post(utils.ExhibitionID, h.Update)
 		app.Post(utils.ExhibitionShowID, h.ShowID)
+		app.Delete(utils.ExhibitionID, h.Delete)
 	}
 	return app
 }
@@ -158,4 +159,14 @@ func (h *ExhibitionHandler) Update(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
 	}
 	return ctx.JSON(exhibition)
+}
+
+func (h *ExhibitionHandler) Delete(ctx aero.Context) error {
+	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
+	id, _ := strconv.Atoi(ctx.Get("id"))
+	err := h.u.Delete(id, user)
+	if err != nil {
+		ctx.SetStatus(http.StatusForbidden)
+	}
+	return ctx.JSON(nil)
 }

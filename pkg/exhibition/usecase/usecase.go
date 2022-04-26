@@ -75,3 +75,7 @@ func (u *ExhibitionUsecase) Update(exhibition *domain.Exhibition, user int) *dom
 func (u *ExhibitionUsecase) UpdateImage(exhibition *domain.Exhibition, user int) *domain.Exhibition {
 	return u.repo.UpdateImage(exhibition, user)
 }
+
+func (u *ExhibitionUsecase) Delete(id, user int) error {
+	return u.repo.Delete(id, user)
+}

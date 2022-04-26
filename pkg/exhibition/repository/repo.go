@@ -34,6 +34,7 @@ const (
 	queryInsert        = `insert into exhibition (name, description, info, museum_id, mus_show, user_id) values($1, $2, $3, $4, $5, $6) returning id;`
 	queryUpdate        = `update exhibition set name = $1, description = $2, info = $3 where id = $4 and user_id = $5;`
 	queryUpdateImage   = `update exhibition set image = $1, image_height = $2, image_width = $3 where id = $4 and user_id = $5;`
+	queryDeleteID      = `delete from exhibition where id = $1 and user_id = $2;`
 )
 
 const (
@@ -343,4 +344,14 @@ func (repo *ExhibitionRepository) UpdateImage(exhibition *domain.Exhibition, use
 		return nil
 	}
 	return exhibition
+}
+
+func (repo *ExhibitionRepository) Delete(id, user int) error {
+	result, err := repo.db.Pool.Exec(context.Background(), queryDeleteID, id, user)
+	if err != nil {
+		return err
+	} else if result.RowsAffected() == 0 {
+		return errors.New("Exhibition not found")
+	}
+	return nil
 }
