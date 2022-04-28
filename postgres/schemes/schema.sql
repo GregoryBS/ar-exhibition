@@ -1,13 +1,15 @@
 create table museum
 (
-    id                  serial primary key,
-    name                text not null,
-    info                json not null default '{}',
-    description         text not null,
-    image               text not null,
-    image_height        int not null,
-    image_width         int not null,
-    popular             bigint not null default 0
+    id             serial primary key,
+    name           text not null,
+    info           json not null default '{}',
+    description    text not null default '',
+    image          text not null default '',
+    image_height   int not null default 0,
+    image_width    int not null default 0,
+    popular        bigint not null default 0,
+    user_id        int not null default 0,
+    mus_show       boolean not null default false
 );
 
 insert into museum(name, info, description, image, image_height, image_width) 
@@ -16,14 +18,17 @@ values('Museum', '{"Страна":"Россия","Город":"Москва","А
 create table exhibition
 (
     id           serial primary key,
-    museum_id    int not null,
+    museum_id    int not null default 0,
     name         text not null,
     description  text not null,
-    image        text not null,
-    image_height int not null,
-    image_width  int not null,
+    image        text not null default '',
+    image_height int not null default 0,
+    image_width  int not null default 0,
     info         json not null default '{}',
-    popular      bigint not null default 0
+    popular      bigint not null default 0,
+    user_id      int not null default 0,
+    exh_show     boolean not null default false,
+    mus_show     boolean not null default false
 );
 
 insert into exhibition(museum_id, name, description, info, image, image_height, image_width) 
@@ -32,15 +37,26 @@ values(1, 'Exhibition', 'Most beautiful exhibition in Moscow', '{"Начало":
 create table picture
 (
     id          serial primary key,
-    exh_id      int not null,
+    exh_id      int[] not null default '{}',
     name        text not null,
-    image       text not null,
+    image       text not null default '',
     description text not null,
     info        json not null default '{}',
-    height      int not null,
-    width       int not null,
-    popular      bigint not null default 0
+    height      int not null default 0,
+    width       int not null default 0,
+    popular     bigint not null default 0,
+    user_id     int not null default 0,
+    pic_show    boolean not null default false,
+    exh_show    boolean[] not null default '{}',
+    mus_show    boolean not null default false
 );
 
 insert into picture(exh_id, name, image, description, info, height, width) 
 values(1, 'Cat', 'default.jpg,notfound.jpg', 'First picture in the app', '{"Автор":"Человек","Год":"2021","Техника":"Компьютерная графика","Размер":"3 х 2"}'::json, 835, 600);
+
+create table users 
+(
+    id       serial primary key,
+    login    text unique not null,
+    password bytea not null
+);

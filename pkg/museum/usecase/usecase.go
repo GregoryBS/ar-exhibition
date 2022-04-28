@@ -33,6 +33,26 @@ func (u *MuseumUsecase) GetMuseums(page, size int) *domain.Page {
 	return u.repo.Museums(page, size)
 }
 
+func (u *MuseumUsecase) GetUserMuseums(user int) []*domain.Museum {
+	return u.repo.UserMuseums(user)
+}
+
 func (u *MuseumUsecase) Search(name string) []*domain.Museum {
 	return u.repo.Search(name)
+}
+
+func (u *MuseumUsecase) Create(museum *domain.Museum, user int) *domain.Museum {
+	return u.repo.Create(museum, user)
+}
+
+func (u *MuseumUsecase) Update(museum *domain.Museum, user int) *domain.Museum {
+	return u.repo.Update(museum, user)
+}
+
+func (u *MuseumUsecase) UpdateImage(museum *domain.Museum, user int) *domain.Museum {
+	return u.repo.UpdateImage(museum, user)
+}
+
+func (u *MuseumUsecase) Show(id, user int) error {
+	return u.repo.Show(id, user)
 }
