@@ -1,0 +1,46 @@
+
+name: ARGAllery backend deployment
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:        
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17.x
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+      - name: Run tests
+        run: go mod tidy && go test -v -coverpkg=./... -coverprofile=profile.cov ./... && go tool cover -func profile.cov
+        
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull code
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: cd backend/ar-exhibition && git checkout main && git pull
+      - name: Build containers
+        uses: appleboy/ssh-action@master
+        with:
+          timeout: 30m
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: cd backend/ar-exhibition && docker-compose build
+      - name: Restart service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: cd backend/ar-exhibition && docker-compose stop && docker rm $(docker ps -aq) && docker-compose up -d
