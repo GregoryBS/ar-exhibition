@@ -16,7 +16,7 @@ const (
 	querySelectOne = `select id, name, image, description, info, image_height, image_width
 	from museum where id = $1 and mus_show;`
 	querySelectByPage = `select id, name, image, image_height, image_width
-	from museum where mus_show offset $1 limit $2;`
+	from museum where mus_show;`  // offset $1 limit $2;`
 	querySelectByUser = `select id, name, image, description, info, image_height, image_width, mus_show
 	from museum where user_id = $1;`
 	querySelectSearch = `select id, name, image, image_height, image_width
@@ -82,8 +82,8 @@ func (repo *MuseumRepository) UpdateMuseumPopular(id int) {
 }
 
 func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
-	offset, limit := (page-1)*size, size
-	rows, err := repo.db.Pool.Query(context.Background(), querySelectByPage, offset, limit)
+	//offset, limit := (page-1)*size, size
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectByPage) //, offset, limit)
 	if err != nil {
 		return &domain.Page{Number: page, Size: size}
 	}
@@ -99,7 +99,8 @@ func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
 		row.Image = utils.SplitPic(row.Image)[0]
 		result = append(result, row)
 	}
-	return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
+	return &domain.Page{Number: 1, Size: len(result), Total: len(result), Items: result}
+	//return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 }
 
 func (repo *MuseumRepository) UserMuseums(user int) []*domain.Museum {

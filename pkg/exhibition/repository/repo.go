@@ -19,7 +19,7 @@ const (
 	querySelectOneUser = `select id, name, image, description, info, image_height, image_width, exh_show
 	from exhibition where id = $1 and user_id = $2;`
 	querySelectAll = `select id, name, image, image_height, image_width, info
-	from exhibition where exh_show and mus_show offset $1 limit $2;`
+	from exhibition where exh_show and mus_show;`  // offset $1 limit $2;`
 	querySelectByMuseum = `select id, name, image, image_height, image_width, info
 	from exhibition where museum_id = $1 and exh_show and mus_show;`
 	querySelectByUser = `select id, name, image, image_height, image_width
@@ -31,10 +31,11 @@ const (
 	queryUpdatePopular = `update exhibition set popular = popular + 1 where id = $1;`
 	queryShow          = `update exhibition set mus_show = not mus_show where user_id = $1;`
 	queryShowID        = `update exhibition set exh_show = not exh_show where id = $1 and user_id = $2;`
-	queryInsert        = `insert into exhibition (name, description, info, museum_id, mus_show, user_id) values($1, $2, $3, $4, $5, $6) returning id;`
-	queryUpdate        = `update exhibition set name = $1, description = $2, info = $3 where id = $4 and user_id = $5;`
-	queryUpdateImage   = `update exhibition set image = $1, image_height = $2, image_width = $3 where id = $4 and user_id = $5;`
-	queryDeleteID      = `delete from exhibition where id = $1 and user_id = $2;`
+	queryInsert        = `insert into exhibition (name, description, info, museum_id, exh_show, mus_show, user_id) 
+	values($1, $2, $3, $4, $5, $6, $7) returning id;`
+	queryUpdate      = `update exhibition set name = $1, description = $2, info = $3 where id = $4 and user_id = $5;`
+	queryUpdateImage = `update exhibition set image = $1, image_height = $2, image_width = $3 where id = $4 and user_id = $5;`
+	queryDeleteID    = `delete from exhibition where id = $1 and user_id = $2;`
 )
 
 const (
@@ -179,8 +180,8 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int, filter string) 
 }
 
 func (repo *ExhibitionRepository) AllExhibitions(page, size int, filter string) *domain.Page {
-	offset, limit := (page-1)*size, size
-	rows, err := repo.db.Pool.Query(context.Background(), querySelectAll, offset, limit)
+	//offset, limit := (page-1)*size, size
+	rows, err := repo.db.Pool.Query(context.Background(), querySelectAll) //, offset, limit)
 	if err != nil {
 		return &domain.Page{Number: page, Size: size}
 	}
@@ -213,7 +214,8 @@ func (repo *ExhibitionRepository) AllExhibitions(page, size int, filter string) 
 			result = append(result, row)
 		}
 	}
-	return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
+	return &domain.Page{Number: 1, Size: len(result), Total: len(result), Items: result}
+	//return &domain.Page{Number: page, Size: size, Total: len(result), Items: result}
 }
 
 func (repo *ExhibitionRepository) Search(name, filter string) []*domain.Exhibition {
@@ -313,11 +315,14 @@ func (repo *ExhibitionRepository) Create(exhibition *domain.Exhibition, museum *
 	for _, v := range exhibition.Info {
 		params[v.Type] = v.Value
 	}
-	flag := false
-	if museum.Show > 0 {
-		flag = true
+	exh_show, mus_show := false, false
+	if exhibition.Show > 0 {
+		exh_show = true
 	}
-	row := repo.db.Pool.QueryRow(context.Background(), queryInsert, exhibition.Name, exhibition.Description, params, museum.ID, flag, user)
+	if museum.Show > 0 {
+		mus_show = true
+	}
+	row := repo.db.Pool.QueryRow(context.Background(), queryInsert, exhibition.Name, exhibition.Description, params, museum.ID, exh_show, mus_show, user)
 	err := row.Scan(&exhibition.ID)
 	if err != nil {
 		return nil

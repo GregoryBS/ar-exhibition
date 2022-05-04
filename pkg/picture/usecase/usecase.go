@@ -18,12 +18,12 @@ func PictureUsecases(repo interface{}) interface{} {
 	return nil
 }
 
+func (u *PictureUsecase) GetPictureTop() []*domain.Picture {
+	return u.repo.TopPictures(15)
+}
+
 func (u *PictureUsecase) GetPicturesByExh(exhibition, user int) []*domain.Picture {
-	if exhibition > 0 {
-		return u.repo.ExhibitionPictures(exhibition, user)
-	} else {
-		return u.repo.TopPictures(15)
-	}
+	return u.repo.ExhibitionPictures(exhibition, user)
 }
 
 func (u *PictureUsecase) GetPicturesByUser(user int) []*domain.Picture {
