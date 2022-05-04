@@ -53,6 +53,7 @@ const (
 
 const (
 	BasePictureApi      = "/api/v1/pictures"
+	PictureTop          = BasePictureApi + "/top"
 	PictureID           = BasePictureApi + "/:id"
 	PictureImage        = PictureID + "/images"
 	PictureVideo        = PictureID + "/videos"

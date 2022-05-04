@@ -35,7 +35,7 @@ func (u *GatewayUsecase) GetMain() *domain.MainPage {
 	resp.Body.Close()
 
 	pictures := make([]*domain.Picture, 0)
-	resp, err = http.Get(utils.PictureService + utils.BasePictureApi)
+	resp, err = http.Get(utils.PictureService + utils.PictureTop)
 	if err != nil {
 		return &domain.MainPage{Museums: museums, Exhibitions: exhibitions}
 	}

@@ -27,6 +27,7 @@ func ConfigurePicture(app *aero.Application, handlers interface{}) *aero.Applica
 	h, ok := handlers.(*PictureHandler)
 	if ok {
 		app.Get(utils.BasePictureApi, h.GetPictures)
+		app.Get(utils.PictureTop, h.GetPictureTop)
 		app.Get(utils.PictureID, h.GetPictureID)
 		app.Get(utils.BasePictureSearch, h.Search)
 		app.Post(utils.BasePictureApi, h.Create)
@@ -46,8 +47,9 @@ func (h *PictureHandler) GetPictures(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	var pictures []*domain.Picture
 	if url.Has("exhibitionID") {
-		exhibitionID, _ := strconv.Atoi(url.Get("exhibitionID"))
-		pictures = h.u.GetPicturesByExh(exhibitionID, user)
+		if exhibitionID, _ := strconv.Atoi(url.Get("exhibitionID")); exhibitionID > 0 {
+			pictures = h.u.GetPicturesByExh(exhibitionID, user)
+		}
 	} else if url.Has("id") {
 		ids := url.Get("id")
 		id := make([]int, 0)
@@ -59,6 +61,11 @@ func (h *PictureHandler) GetPictures(ctx aero.Context) error {
 	} else {
 		pictures = h.u.GetPicturesByUser(user)
 	}
+	return ctx.JSON(pictures)
+}
+
+func (h *PictureHandler) GetPictureTop(ctx aero.Context) error {
+	pictures := h.u.GetPictureTop()
 	return ctx.JSON(pictures)
 }
 
