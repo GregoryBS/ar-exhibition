@@ -180,6 +180,9 @@ func (h *GatewayHandler) GetPictures(ctx aero.Context) error {
 		if user.ID > 0 {
 			pictures = h.u.GetPicturesUser(user.ID)
 		}
+	} else if url.Has("exhibitionID") {
+		exhibition, _ := strconv.Atoi(url.Get("exhibitionID"))
+		pictures = h.u.GetExhibitionPictures(exhibition)
 	} else {
 		pictures = h.u.GetPicturesFav(ids)
 	}
@@ -380,6 +383,15 @@ func uploadFiles(r *http.Request) (string, interface{}) {
 				}
 				file.Close()
 			}
+		case "image_url":
+			buf := make([]byte, 1024)
+			if s, err := part.Read(buf); err == nil {
+				urls := strings.Split(string(buf[:s]), ",")
+				for i := range urls {
+					urls[i] = urls[i][strings.LastIndex(urls[i], "/")+1:]
+				}
+				files = append(files, urls...)
+			}
 		case "video":
 			filename := utils.RandString(32) + filepath.Ext(part.FileName())
 			file, err := createFile(VideoDir, filename)
@@ -395,8 +407,7 @@ func uploadFiles(r *http.Request) (string, interface{}) {
 			files = append(files, filename)
 		case "video_size":
 			buf := make([]byte, 1024)
-			s, err := part.Read(buf)
-			if err == nil {
+			if s, err := part.Read(buf); err == nil {
 				sizes = string(buf[:s])
 			}
 		default:

@@ -94,6 +94,19 @@ func (u *GatewayUsecase) GetExhibition(id int, user *domain.User) (*domain.Exhib
 	return exhibition, nil
 }
 
+func (u *GatewayUsecase) GetExhibitionPictures(exhibition int) []*domain.Picture {
+	pictures := make([]*domain.Picture, 0)
+	resp, err := http.Get(utils.PictureService + utils.PictureByExhibition + fmt.Sprint(exhibition))
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusOK {
+		utils.DecodeJSON(resp.Body, &pictures)
+	}
+	return pictures
+}
+
 func (u *GatewayUsecase) GetMuseum(id int) (*domain.Museum, *domain.ErrorResponse) {
 	museum := &domain.Museum{}
 	resp, err := http.Get(utils.MuseumService + strings.Replace(utils.MuseumID, ":id", fmt.Sprint(id), 1))
