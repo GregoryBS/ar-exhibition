@@ -539,6 +539,11 @@ func (u *GatewayUsecase) UpdateExhibitionImage(filename string, sizes *domain.Im
 }
 
 func (u *GatewayUsecase) UpdateExhibition(exhibition *domain.Exhibition, user int) (*domain.Exhibition, error) {
+	museum := u.GetUserMuseums(user)
+	if museum == nil {
+		return nil, errors.New("Unable to update exhibition")
+	}
+
 	req, _ := http.NewRequest(http.MethodPost, utils.ExhibitionService+strings.Replace(utils.ExhibitionID, ":id", fmt.Sprint(exhibition.ID), 1),
 		bytes.NewBuffer(utils.EncodeJSON(exhibition)))
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
@@ -555,7 +560,7 @@ func (u *GatewayUsecase) UpdateExhibition(exhibition *domain.Exhibition, user in
 	resp.Body.Close()
 
 	req, _ = http.NewRequest(http.MethodPost, utils.PictureService+utils.PicturesToExh,
-		bytes.NewBuffer(utils.EncodeJSON(domain.MuseumExhibition{Exh: result})))
+		bytes.NewBuffer(utils.EncodeJSON(domain.MuseumExhibition{Mus: museum[0], Exh: result})))
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
