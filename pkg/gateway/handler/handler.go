@@ -378,7 +378,7 @@ func uploadFiles(r *http.Request) (string, interface{}) {
 					file.Seek(0, 0)
 					m, _, err := image.Decode(file)
 					if err == nil {
-						sizes = &domain.ImageSize{Height: m.Bounds().Dy(), Width: m.Bounds().Dx()}
+						sizes = &domain.ImageSize{Height: float32(m.Bounds().Dy()), Width: float32(m.Bounds().Dx())}
 					}
 				}
 				file.Close()

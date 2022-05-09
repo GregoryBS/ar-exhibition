@@ -5,8 +5,8 @@ create table museum
     info           json not null default '{}',
     description    text not null default '',
     image          text not null default '',
-    image_height   int not null default 0,
-    image_width    int not null default 0,
+    image_height   real not null default 0,
+    image_width    real not null default 0,
     popular        bigint not null default 0,
     user_id        int not null default 0,
     mus_show       boolean not null default false
@@ -22,8 +22,8 @@ create table exhibition
     name         text not null,
     description  text not null,
     image        text not null default '',
-    image_height int not null default 0,
-    image_width  int not null default 0,
+    image_height real not null default 0,
+    image_width  real not null default 0,
     info         json not null default '{}',
     popular      bigint not null default 0,
     user_id      int not null default 0,
@@ -42,8 +42,8 @@ create table picture
     image       text not null default '',
     description text not null,
     info        json not null default '{}',
-    height      int not null default 0,
-    width       int not null default 0,
+    height      real not null default 0,
+    width       real not null default 0,
     popular     bigint not null default 0,
     user_id     int not null default 0,
     pic_show    boolean not null default false,
@@ -58,5 +58,6 @@ create table users
 (
     id       serial primary key,
     login    text unique not null,
-    password bytea not null
+    password bytea not null,
+    admin    boolean not null default false
 );

@@ -1,8 +1,8 @@
 package domain
 
 type ImageSize struct {
-	Height int `json:"height,omitempty"`
-	Width  int `json:"width,omitempty"`
+	Height float32 `json:"height,omitempty"`
+	Width  float32 `json:"width,omitempty"`
 }
 
 type Param struct {
