@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/jackc/pgconn"
@@ -51,6 +52,7 @@ func PictureRepo(db interface{}) interface{} {
 	if ok {
 		return &PictureRepository{db: instance}
 	}
+	log.Println("Unknown object instead of db-manager")
 	return nil
 }
 
@@ -58,6 +60,7 @@ func (repo *PictureRepository) UserPictures(user int) []*domain.Picture {
 	result := make([]*domain.Picture, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectByUser, user)
 	if err != nil {
+		log.Println("Cannot get user pictures:", user, err)
 		return result
 	}
 	defer rows.Close()
@@ -84,6 +87,7 @@ func (repo *PictureRepository) ExhibitionPictures(exhibition, user int) []*domai
 	}
 	rows, err := repo.db.Pool.Query(context.Background(), query, exhibition)
 	if err != nil {
+		log.Println("Cannot get exhibition pictures:", exhibition, err)
 		return result
 	}
 	defer rows.Close()
@@ -107,7 +111,7 @@ func (repo *PictureRepository) TopPictures(limit int) []*domain.Picture {
 	result := make([]*domain.Picture, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectTop, limit)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("Cannot get top pictures:", err)
 		return result
 	}
 	defer rows.Close()
@@ -130,6 +134,7 @@ func (repo *PictureRepository) PictureID(id int) (*domain.Picture, error) {
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
 	err := row.Scan(&pic.ID, &pic.Name, &pic.Image, &pic.Description, &params, &pic.Sizes.Height, &pic.Sizes.Width)
 	if err != nil {
+		log.Println("Cannot get picture:", id, err)
 		return nil, err
 	}
 	pic.Image = strings.Join(utils.SplitPic(pic.Image), ",")
@@ -144,6 +149,7 @@ func (repo *PictureRepository) PictureIDUser(id, user int) (*domain.Picture, err
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOneByUser, id, user)
 	err := row.Scan(&pic.ID, &pic.Name, &pic.Image, &pic.Description, &params, &pic.Sizes.Height, &pic.Sizes.Width, &pic.Video, &pic.VideoSize, &flag)
 	if err != nil {
+		log.Println("Cannot get user picture:", user, id, err)
 		return nil, err
 	}
 	if flag {
@@ -162,7 +168,7 @@ func (repo *PictureRepository) PictureIDUser(id, user int) (*domain.Picture, err
 func (repo *PictureRepository) UpdatePicturePopular(id int) {
 	_, err := repo.db.Pool.Exec(context.Background(), queryUpdatePopular, id)
 	if err != nil {
-		fmt.Println("Cannot update popular with picture id: ", id)
+		log.Println("Cannot update popular with picture id: ", id, err)
 	}
 }
 
@@ -170,6 +176,7 @@ func (repo *PictureRepository) Search(name string) []*domain.Picture {
 	result := make([]*domain.Picture, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, "%"+name+"%")
 	if err != nil {
+		log.Println("Cannot search pictures with name:", name, err)
 		return result
 	}
 	defer rows.Close()
@@ -190,6 +197,7 @@ func (repo *PictureRepository) SearchID(name string, exhibitionID int) []*domain
 	result := make([]*domain.Picture, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearchID, "%"+name+"%", exhibitionID)
 	if err != nil {
+		log.Println("Cannot search pictures with name:", name, err)
 		return result
 	}
 	defer rows.Close()
@@ -215,6 +223,7 @@ func (repo *PictureRepository) Create(picture *domain.Picture, user int) *domain
 		picture.Name, picture.Description, params, picture.Sizes.Height, picture.Sizes.Width, user)
 	err := row.Scan(&picture.ID)
 	if err != nil {
+		log.Println("Cannot create picture:", err)
 		return nil
 	}
 	return picture
@@ -228,6 +237,7 @@ func (repo *PictureRepository) Update(picture *domain.Picture, user int) *domain
 	result, err := repo.db.Pool.Exec(context.Background(), queryUpdate,
 		picture.Name, picture.Description, params, picture.ID, user, picture.Sizes.Height, picture.Sizes.Width)
 	if err != nil || result.RowsAffected() == 0 {
+		log.Println("Cannot update picture:", picture.ID, err, result.RowsAffected())
 		return nil
 	}
 	return picture
@@ -236,6 +246,7 @@ func (repo *PictureRepository) Update(picture *domain.Picture, user int) *domain
 func (repo *PictureRepository) UpdateImage(picture *domain.Picture, user int) *domain.Picture {
 	result, err := repo.db.Pool.Exec(context.Background(), queryUpdateImage, picture.Image, picture.ID, user)
 	if err != nil || result.RowsAffected() == 0 {
+		log.Println("Cannot update picture image:", picture.ID, err, result.RowsAffected())
 		return nil
 	}
 	return picture
@@ -244,6 +255,7 @@ func (repo *PictureRepository) UpdateImage(picture *domain.Picture, user int) *d
 func (repo *PictureRepository) UpdateVideo(picture *domain.Picture, user int) *domain.Picture {
 	result, err := repo.db.Pool.Exec(context.Background(), queryUpdateVideo, picture.Video, picture.VideoSize, picture.ID, user)
 	if err != nil || result.RowsAffected() == 0 {
+		log.Println("Cannot update picture video:", picture.ID, err, result.RowsAffected())
 		return nil
 	}
 	return picture
@@ -252,14 +264,16 @@ func (repo *PictureRepository) UpdateVideo(picture *domain.Picture, user int) *d
 func (repo *PictureRepository) Show(user int) error {
 	_, err := repo.db.Pool.Exec(context.Background(), queryShow, user)
 	if err != nil {
+		log.Println("Cannot publish user pictures:", user, err)
 		return err
 	}
 	return nil
 }
 
-func (repo *PictureRepository) ShowExh(exhibiton, user int) error {
-	_, err := repo.db.Pool.Exec(context.Background(), queryShowExh, exhibiton, user)
+func (repo *PictureRepository) ShowExh(exhibition, user int) error {
+	_, err := repo.db.Pool.Exec(context.Background(), queryShowExh, exhibition, user)
 	if err != nil {
+		log.Println("Cannot publish exhibition pictures:", exhibition, err)
 		return err
 	}
 	return nil
@@ -268,8 +282,10 @@ func (repo *PictureRepository) ShowExh(exhibiton, user int) error {
 func (repo *PictureRepository) ShowID(id, user int) error {
 	result, err := repo.db.Pool.Exec(context.Background(), queryShowID, id, user)
 	if err != nil {
+		log.Println("Cannot publish picture:", id, err)
 		return err
 	} else if result.RowsAffected() == 0 {
+		log.Println("Picture for publish not found")
 		return errors.New("Picture not found")
 	}
 	return nil
@@ -278,8 +294,10 @@ func (repo *PictureRepository) ShowID(id, user int) error {
 func (repo *PictureRepository) Delete(id, user int) error {
 	result, err := repo.db.Pool.Exec(context.Background(), queryDeleteID, id, user)
 	if err != nil {
+		log.Println("Cannot delete picture:", id, err)
 		return err
 	} else if result.RowsAffected() == 0 {
+		log.Println("Picture for deleting not found")
 		return errors.New("Picture not found")
 	}
 	return nil
@@ -288,6 +306,7 @@ func (repo *PictureRepository) Delete(id, user int) error {
 func (repo *PictureRepository) DeleteFromExhibition(exhibition int) error {
 	_, err := repo.db.Pool.Exec(context.Background(), queryDeleteExhibition, exhibition)
 	if err != nil {
+		log.Println("Cannot delete pictures from exhibition:", exhibition, err)
 		return err
 	}
 	return nil
@@ -312,8 +331,10 @@ func (repo *PictureRepository) AddToExhibition(pic *domain.Picture, exh *domain.
 		result, err = repo.db.Pool.Exec(context.Background(), sql, exh.ID, exh_flag, pic.ID, user, mus_flag)
 	}
 	if err != nil {
+		log.Println("Cannot add picture to exhibition:", pic.ID, exh.ID, err)
 		return err
 	} else if result.RowsAffected() == 0 {
+		log.Println("Cannot find picture to add to exhibition:", pic.ID, exh.ID, err)
 		return errors.New("Picture not found")
 	}
 	return nil

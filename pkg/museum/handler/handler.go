@@ -4,6 +4,7 @@ import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/museum/usecase"
 	"ar_exhibition/pkg/utils"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -19,6 +20,7 @@ func MuseumHandlers(usecases interface{}) interface{} {
 	if ok {
 		return &MuseumHandler{u: instance}
 	}
+	log.Println("Unknown object instead of museum handler")
 	return nil
 }
 
@@ -46,6 +48,7 @@ func (h *MuseumHandler) GetMuseumID(ctx aero.Context) error {
 	id, _ := strconv.Atoi(ctx.Get("id"))
 	museum, err := h.u.GetMuseumID(id)
 	if err != nil {
+		log.Println("Error while getting museum:", id, err)
 		ctx.SetStatus(http.StatusNotFound)
 		return ctx.JSON(nil)
 	}
@@ -84,12 +87,14 @@ func (h *MuseumHandler) Create(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	museum := new(domain.Museum)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), museum); err != nil {
+		log.Println("Invalid museum json", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to create"})
 	}
 
 	museum = h.u.Create(museum, user)
 	if museum == nil {
+		log.Println("Unable to create museum")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to create"})
 	}
@@ -100,12 +105,14 @@ func (h *MuseumHandler) Update(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	museum := new(domain.Museum)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), museum); err != nil {
+		log.Println("Invalid museum json", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})
 	}
 
 	museum = h.u.Update(museum, user)
 	if museum == nil {
+		log.Println("Unable to update museum")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})
 	}
@@ -116,12 +123,14 @@ func (h *MuseumHandler) UpdateImage(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	museum := new(domain.Museum)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), museum); err != nil {
+		log.Println("Invalid museum json", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})
 	}
 
 	museum = h.u.UpdateImage(museum, user)
 	if museum == nil {
+		log.Println("Unable to update museum image")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})
 	}
@@ -133,6 +142,7 @@ func (h *MuseumHandler) Show(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	err := h.u.Show(id, user)
 	if err != nil {
+		log.Println("Error while publishing museum:", err)
 		ctx.SetStatus(http.StatusForbidden)
 	}
 	return ctx.JSON(nil)

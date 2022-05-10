@@ -3,6 +3,7 @@ package usecase
 import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/picture/repository"
+	"log"
 	"strings"
 )
 
@@ -15,6 +16,7 @@ func PictureUsecases(repo interface{}) interface{} {
 	if ok {
 		return &PictureUsecase{repo: instance}
 	}
+	log.Println("Unknown object instead of picture usecase")
 	return nil
 }
 
@@ -97,9 +99,8 @@ func (u *PictureUsecase) UpdateForExhibition(exh *domain.Exhibition, mus *domain
 	err := u.repo.DeleteFromExhibition(exh.ID)
 	if err == nil {
 		for i := range exh.Pictures {
-			err = u.repo.AddToExhibition(exh.Pictures[i], exh, mus, user)
-			if err != nil {
-				break
+			if u.repo.AddToExhibition(exh.Pictures[i], exh, mus, user) != nil {
+				log.Println("Unable to add picture to exhibition", err)
 			}
 		}
 	}

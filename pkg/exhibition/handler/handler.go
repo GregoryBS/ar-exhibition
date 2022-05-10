@@ -4,6 +4,7 @@ import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/exhibition/usecase"
 	"ar_exhibition/pkg/utils"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -19,6 +20,7 @@ func ExhibitionHandlers(usecases interface{}) interface{} {
 	if ok {
 		return &ExhibitionHandler{u: instance}
 	}
+	log.Println("Unknown object instead of exhibition handler")
 	return nil
 }
 
@@ -116,6 +118,7 @@ func (h *ExhibitionHandler) Create(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	data := new(domain.MuseumExhibition)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), data); err != nil {
+		log.Println("Invalid exhibition json", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to create"})
 	}
@@ -123,6 +126,7 @@ func (h *ExhibitionHandler) Create(ctx aero.Context) error {
 
 	exhibition = h.u.Create(exhibition, museum, user)
 	if exhibition == nil {
+		log.Println("Unable to create exhibition")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to create"})
 	}
@@ -133,12 +137,14 @@ func (h *ExhibitionHandler) UpdateImage(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	exhibition := new(domain.Exhibition)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), exhibition); err != nil {
+		log.Println("Invalid exhibition json", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
 	}
 
 	exhibition = h.u.UpdateImage(exhibition, user)
 	if exhibition == nil {
+		log.Println("Unable to update exhibition image")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
 	}
@@ -149,12 +155,14 @@ func (h *ExhibitionHandler) Update(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	exhibition := new(domain.Exhibition)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), exhibition); err != nil {
+		log.Println("Invalid exhibition json", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
 	}
 
 	exhibition = h.u.Update(exhibition, user)
 	if exhibition == nil {
+		log.Println("Unable to update exhibition")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
 	}

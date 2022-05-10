@@ -6,6 +6,7 @@ import (
 	"ar_exhibition/pkg/user/usecase"
 	"ar_exhibition/pkg/utils"
 	"bytes"
+	"log"
 	"net/http"
 
 	"github.com/aerogo/aero"
@@ -20,6 +21,7 @@ func UserHandlers(usecases interface{}) interface{} {
 	if ok {
 		return &UserHandler{u: instance}
 	}
+	log.Println("Unknown object instead of user handler")
 	return nil
 }
 
@@ -36,18 +38,21 @@ func ConfigureUser(app *aero.Application, handlers interface{}) *aero.Applicatio
 func (h *UserHandler) Signup(ctx aero.Context) error {
 	form := &domain.User{}
 	if utils.DecodeJSON(ctx.Request().Body().Reader(), form) != nil {
+		log.Println("Invalid user json")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid signup form"})
 	}
 
 	created, err := h.u.Signup(form)
 	if err != nil {
+		log.Println("Unable to create user:", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(err)
 	}
 
 	token, err := user.CreateJWT(created.ID)
 	if err != nil {
+		log.Println("Unexpected error of creating jwt")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Cannot create jwt-token"})
 	}
@@ -60,6 +65,7 @@ func (h *UserHandler) Signup(ctx aero.Context) error {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Error while creating museum for user:", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Cannot create museum for user"})
 	}
@@ -74,18 +80,21 @@ func (h *UserHandler) Signup(ctx aero.Context) error {
 func (h *UserHandler) Login(ctx aero.Context) error {
 	form := &domain.User{}
 	if utils.DecodeJSON(ctx.Request().Body().Reader(), form) != nil {
+		log.Println("Invalid user json")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid login form"})
 	}
 
 	created, err := h.u.Login(form)
 	if err != nil {
+		log.Println("Unable to login user:", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(err)
 	}
 
 	token, err := user.CreateJWT(created.ID)
 	if err != nil {
+		log.Println("Unexpected error of creating jwt")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Cannot create jwt-token"})
 	}

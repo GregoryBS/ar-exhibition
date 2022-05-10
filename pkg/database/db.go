@@ -2,7 +2,7 @@ package database
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/jackc/pgconn"
@@ -25,13 +25,14 @@ func Connect() *DBManager {
 	connString := os.Getenv("DATABASE_URL")
 	pool, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
-		fmt.Println("Connection to postgres failed")
+		log.Println("Connection to postgres failed")
 		return nil
 	}
-	fmt.Println("Successful connection to postgres")
+	log.Println("Successful connection to postgres")
 	return &DBManager{Pool: pool}
 }
 
 func Disconnect(db *DBManager) {
 	db.Pool.Close()
+	log.Println("database disconnected")
 }

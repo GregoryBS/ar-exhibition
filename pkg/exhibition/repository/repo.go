@@ -6,7 +6,7 @@ import (
 	"ar_exhibition/pkg/utils"
 	"context"
 	"errors"
-	"fmt"
+	"log"
 	"strings"
 	"time"
 )
@@ -51,6 +51,7 @@ func ExhibitionRepo(db interface{}) interface{} {
 	if ok {
 		return &ExhibitionRepository{db: instance}
 	}
+	log.Println("Unknown object instead of db-manager")
 	return nil
 }
 
@@ -58,7 +59,7 @@ func (repo *ExhibitionRepository) ExhibitionTop(limit int) []*domain.Exhibition 
 	result := make([]*domain.Exhibition, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectTop)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("Cannot get top exhibitions with error:", err)
 		return result
 	}
 	defer rows.Close()
@@ -86,7 +87,7 @@ func (repo *ExhibitionRepository) ExhibitionsByUser(user int) []*domain.Exhibiti
 	result := make([]*domain.Exhibition, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectByUser, user)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("Cannot get user exhibitions:", user, err)
 		return result
 	}
 	defer rows.Close()
@@ -109,6 +110,7 @@ func (repo *ExhibitionRepository) ExhibitionID(id int) (*domain.Exhibition, erro
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
 	err := row.Scan(&exh.ID, &exh.Name, &exh.Image, &exh.Description, &params, &exh.Sizes.Height, &exh.Sizes.Width)
 	if err != nil {
+		log.Println("Cannot get exhibition:", id, err)
 		return nil, err
 	}
 	exh.Image = strings.Join(utils.SplitPic(exh.Image), ",")
@@ -123,6 +125,7 @@ func (repo *ExhibitionRepository) ExhibitionIDUser(id, user int) (*domain.Exhibi
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOneUser, id, user)
 	err := row.Scan(&exh.ID, &exh.Name, &exh.Image, &exh.Description, &params, &exh.Sizes.Height, &exh.Sizes.Width, &flag)
 	if err != nil {
+		log.Println("Cannot get user exhibition:", user, id, err)
 		return nil, err
 	}
 	if flag {
@@ -138,7 +141,7 @@ func (repo *ExhibitionRepository) ExhibitionIDUser(id, user int) (*domain.Exhibi
 func (repo *ExhibitionRepository) UpdateExhibitionPopular(id int) {
 	_, err := repo.db.Pool.Exec(context.Background(), queryUpdatePopular, id)
 	if err != nil {
-		fmt.Println("Cannot update popular with exhibition id: ", id)
+		log.Println("Cannot update popular with exhibition id: ", id, err)
 	}
 }
 
@@ -146,6 +149,7 @@ func (repo *ExhibitionRepository) ExhibitionByMuseum(museum int, filter string) 
 	result := make([]*domain.Exhibition, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectByMuseum, museum)
 	if err != nil {
+		log.Println("Cannot get museum exhibitions:", museum, err)
 		return result
 	}
 	defer rows.Close()
@@ -183,6 +187,7 @@ func (repo *ExhibitionRepository) AllExhibitions(page, size int, filter string) 
 	//offset, limit := (page-1)*size, size
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectAll) //, offset, limit)
 	if err != nil {
+		log.Println("Cannot get all exhibitions:", err)
 		return &domain.Page{Number: page, Size: size}
 	}
 	defer rows.Close()
@@ -222,6 +227,7 @@ func (repo *ExhibitionRepository) Search(name, filter string) []*domain.Exhibiti
 	result := make([]*domain.Exhibition, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, "%"+name+"%")
 	if err != nil {
+		log.Println("Cannot search exhibitions by name:", name, err)
 		return result
 	}
 	defer rows.Close()
@@ -259,6 +265,7 @@ func (repo *ExhibitionRepository) SearchID(name string, museumID int, filter str
 	result := make([]*domain.Exhibition, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearchID, "%"+name+"%", museumID)
 	if err != nil {
+		log.Println("Cannot search exhibitions by name:", name, err)
 		return result
 	}
 	defer rows.Close()
@@ -295,6 +302,7 @@ func (repo *ExhibitionRepository) SearchID(name string, museumID int, filter str
 func (repo *ExhibitionRepository) Show(user int) error {
 	_, err := repo.db.Pool.Exec(context.Background(), queryShow, user)
 	if err != nil {
+		log.Println("User exhibitions publish error:", user, err)
 		return err
 	}
 	return nil
@@ -303,8 +311,10 @@ func (repo *ExhibitionRepository) Show(user int) error {
 func (repo *ExhibitionRepository) ShowID(id, user int) error {
 	result, err := repo.db.Pool.Exec(context.Background(), queryShowID, id, user)
 	if err != nil {
+		log.Println("Exhibition publish error:", id, err)
 		return err
 	} else if result.RowsAffected() == 0 {
+		log.Println("Exhibition for publishing not found")
 		return errors.New("Exhibition not found")
 	}
 	return nil
@@ -325,6 +335,7 @@ func (repo *ExhibitionRepository) Create(exhibition *domain.Exhibition, museum *
 	row := repo.db.Pool.QueryRow(context.Background(), queryInsert, exhibition.Name, exhibition.Description, params, museum.ID, exh_show, mus_show, user)
 	err := row.Scan(&exhibition.ID)
 	if err != nil {
+		log.Println("Exhibition creating error:", err)
 		return nil
 	}
 	return exhibition
@@ -337,6 +348,7 @@ func (repo *ExhibitionRepository) Update(exhibition *domain.Exhibition, user int
 	}
 	result, err := repo.db.Pool.Exec(context.Background(), queryUpdate, exhibition.Name, exhibition.Description, params, exhibition.ID, user)
 	if err != nil || result.RowsAffected() == 0 {
+		log.Println("Exhibition updating error:", exhibition.ID, err, result.RowsAffected())
 		return nil
 	}
 	return exhibition
@@ -346,6 +358,7 @@ func (repo *ExhibitionRepository) UpdateImage(exhibition *domain.Exhibition, use
 	result, err := repo.db.Pool.Exec(context.Background(), queryUpdateImage,
 		exhibition.Image, exhibition.Sizes.Height, exhibition.Sizes.Width, exhibition.ID, user)
 	if err != nil || result.RowsAffected() == 0 {
+		log.Println("Exhibition image updating error:", exhibition.ID, err, result.RowsAffected())
 		return nil
 	}
 	return exhibition
@@ -354,8 +367,10 @@ func (repo *ExhibitionRepository) UpdateImage(exhibition *domain.Exhibition, use
 func (repo *ExhibitionRepository) Delete(id, user int) error {
 	result, err := repo.db.Pool.Exec(context.Background(), queryDeleteID, id, user)
 	if err != nil {
+		log.Println("Exhibition deleting error:", id, err)
 		return err
 	} else if result.RowsAffected() == 0 {
+		log.Println("Exhibition for deleting not found")
 		return errors.New("Exhibition not found")
 	}
 	return nil

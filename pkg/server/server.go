@@ -2,7 +2,7 @@ package server
 
 import (
 	"ar_exhibition/pkg/database"
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -15,7 +15,7 @@ func PanicRecover(next aero.Handler) aero.Handler {
 	return func(ctx aero.Context) error {
 		defer func() {
 			if err := recover(); err != nil {
-				fmt.Printf("Recovered from panic with err: '%s' on url: %s\n", err, ctx.Path())
+				log.Printf("Recovered from panic with err: '%s' on url: %s\n", err, ctx.Path())
 				ctx.Error(http.StatusInternalServerError)
 			}
 		}()
@@ -27,7 +27,7 @@ func Logging(next aero.Handler) aero.Handler {
 	return func(ctx aero.Context) error {
 		start := time.Now()
 		err := next(ctx)
-		fmt.Println(ctx.Request().Method(), ctx.Request().Internal().RequestURI, ctx.Status(), time.Since(start))
+		log.Println(ctx.Request().Method(), ctx.Request().Internal().RequestURI, ctx.Status(), time.Since(start))
 		return err
 	}
 }

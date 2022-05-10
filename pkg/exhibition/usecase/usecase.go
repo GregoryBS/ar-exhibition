@@ -3,6 +3,7 @@ package usecase
 import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/exhibition/repository"
+	"log"
 )
 
 type ExhibitionUsecase struct {
@@ -14,6 +15,7 @@ func ExhibitionUsecases(repo interface{}) interface{} {
 	if ok {
 		return &ExhibitionUsecase{repo: instance}
 	}
+	log.Println("Unknown object instead of exhibition usecase")
 	return nil
 }
 

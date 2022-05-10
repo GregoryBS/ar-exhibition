@@ -6,7 +6,7 @@ import (
 	"ar_exhibition/pkg/utils"
 	"context"
 	"errors"
-	"fmt"
+	"log"
 	"strings"
 )
 
@@ -37,6 +37,7 @@ func MuseumRepo(db interface{}) interface{} {
 	if ok {
 		return &MuseumRepository{db: instance}
 	}
+	log.Println("Unknown object instead of db-manager")
 	return nil
 }
 
@@ -44,7 +45,7 @@ func (repo *MuseumRepository) MuseumTop(limit int) []*domain.Museum {
 	result := make([]*domain.Museum, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectTop, limit)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("Museum top error:", err)
 		return result
 	}
 	defer rows.Close()
@@ -67,6 +68,7 @@ func (repo *MuseumRepository) MuseumID(id int) (*domain.Museum, error) {
 	row := repo.db.Pool.QueryRow(context.Background(), querySelectOne, id)
 	err := row.Scan(&museum.ID, &museum.Name, &museum.Image, &museum.Description, &params, &museum.Sizes.Height, &museum.Sizes.Width)
 	if err != nil {
+		log.Println("Museum id error:", id, err)
 		return nil, err
 	}
 	museum.Image = strings.Join(utils.SplitPic(museum.Image), ",")
@@ -77,7 +79,7 @@ func (repo *MuseumRepository) MuseumID(id int) (*domain.Museum, error) {
 func (repo *MuseumRepository) UpdateMuseumPopular(id int) {
 	_, err := repo.db.Pool.Exec(context.Background(), queryUpdatePopular, id)
 	if err != nil {
-		fmt.Println("Cannot update popular with museum id: ", id)
+		log.Println("Cannot update popular with museum id: ", id, err)
 	}
 }
 
@@ -85,6 +87,7 @@ func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
 	//offset, limit := (page-1)*size, size
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectByPage) //, offset, limit)
 	if err != nil {
+		log.Println("Museums error:", err)
 		return &domain.Page{Number: page, Size: size}
 	}
 	defer rows.Close()
@@ -106,6 +109,7 @@ func (repo *MuseumRepository) Museums(page, size int) *domain.Page {
 func (repo *MuseumRepository) UserMuseums(user int) []*domain.Museum {
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectByUser, user)
 	if err != nil {
+		log.Println("User museums error:", user, err)
 		return nil
 	}
 	defer rows.Close()
@@ -135,6 +139,7 @@ func (repo *MuseumRepository) Search(name string) []*domain.Museum {
 	result := make([]*domain.Museum, 0)
 	rows, err := repo.db.Pool.Query(context.Background(), querySelectSearch, "%"+name+"%")
 	if err != nil {
+		log.Println("Museum search error:", name, err)
 		return result
 	}
 	defer rows.Close()
@@ -155,6 +160,7 @@ func (repo *MuseumRepository) Create(museum *domain.Museum, user int) *domain.Mu
 	row := repo.db.Pool.QueryRow(context.Background(), queryInsert, museum.Name, user)
 	err := row.Scan(&museum.ID)
 	if err != nil {
+		log.Println("Museum creating error:", err)
 		return nil
 	}
 	return museum
@@ -167,6 +173,7 @@ func (repo *MuseumRepository) Update(museum *domain.Museum, user int) *domain.Mu
 	}
 	result, err := repo.db.Pool.Exec(context.Background(), queryUpdate, museum.Name, museum.Description, params, museum.ID, user)
 	if err != nil || result.RowsAffected() == 0 {
+		log.Println("Museum update error:", museum.ID, err, result.RowsAffected())
 		return nil
 	}
 	return museum
@@ -175,6 +182,7 @@ func (repo *MuseumRepository) Update(museum *domain.Museum, user int) *domain.Mu
 func (repo *MuseumRepository) UpdateImage(museum *domain.Museum, user int) *domain.Museum {
 	result, err := repo.db.Pool.Exec(context.Background(), queryUpdateImage, museum.Image, museum.Sizes.Height, museum.Sizes.Width, museum.ID, user)
 	if err != nil || result.RowsAffected() == 0 {
+		log.Println("Museum image update error:", museum.ID, err, result.RowsAffected())
 		return nil
 	}
 	return museum
@@ -183,8 +191,10 @@ func (repo *MuseumRepository) UpdateImage(museum *domain.Museum, user int) *doma
 func (repo *MuseumRepository) Show(id, user int) error {
 	result, err := repo.db.Pool.Exec(context.Background(), queryShow, id, user)
 	if err != nil {
+		log.Println("Museum publish error:", id, err)
 		return err
 	} else if result.RowsAffected() == 0 {
+		log.Println("Museum for publishing not found")
 		return errors.New("Museum not found")
 	}
 	return nil

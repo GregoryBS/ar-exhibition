@@ -4,6 +4,7 @@ import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/picture/usecase"
 	"ar_exhibition/pkg/utils"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -20,6 +21,7 @@ func PictureHandlers(usecases interface{}) interface{} {
 	if ok {
 		return &PictureHandler{u: instance}
 	}
+	log.Println("Unknown object instead of picture handler")
 	return nil
 }
 
@@ -96,12 +98,14 @@ func (h *PictureHandler) Create(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	picture := new(domain.Picture)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), picture); err != nil {
+		log.Println("Invalid picture json", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to create"})
 	}
 
 	picture = h.u.Create(picture, user)
 	if picture == nil {
+		log.Println("Picture creating error")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to create"})
 	}
@@ -112,12 +116,14 @@ func (h *PictureHandler) UpdateImage(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	picture := new(domain.Picture)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), picture); err != nil {
+		log.Println("Invalid picture json", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to update"})
 	}
 
 	picture = h.u.UpdateImage(picture, user)
 	if picture == nil {
+		log.Println("Picture image updating error")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to update"})
 	}
@@ -128,12 +134,14 @@ func (h *PictureHandler) UpdateVideo(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	picture := new(domain.Picture)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), picture); err != nil {
+		log.Println("Invalid picture json", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to update"})
 	}
 
 	picture = h.u.UpdateVideo(picture, user)
 	if picture == nil {
+		log.Println("Picture video updating error")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to update"})
 	}
@@ -144,12 +152,14 @@ func (h *PictureHandler) Update(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	picture := new(domain.Picture)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), picture); err != nil {
+		log.Println("Invalid picture json", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to update"})
 	}
 
 	picture = h.u.Update(picture, user)
 	if picture == nil {
+		log.Println("Picture updating error")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to update"})
 	}
@@ -195,6 +205,7 @@ func (h *PictureHandler) UpdateForExhibition(ctx aero.Context) error {
 	user, _ := strconv.Atoi(ctx.Request().Header(utils.UserHeader))
 	data := new(domain.MuseumExhibition)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), data); err != nil {
+		log.Println("Invalid exhibition json for updating pictures", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
 	}
@@ -202,6 +213,7 @@ func (h *PictureHandler) UpdateForExhibition(ctx aero.Context) error {
 
 	err := h.u.UpdateForExhibition(exhibition, museum, user)
 	if err != nil {
+		log.Println("Error while adding pictures to exhibition", err)
 		ctx.SetStatus(http.StatusBadRequest)
 	}
 	return ctx.JSON(nil)

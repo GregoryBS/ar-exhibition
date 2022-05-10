@@ -4,6 +4,7 @@ import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/user/repository"
 	"fmt"
+	"log"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -17,6 +18,7 @@ func UserUsecases(repo interface{}) interface{} {
 	if ok {
 		return &UserUsecase{repo: instance}
 	}
+	log.Println("Unknown object instead of user usecase")
 	return nil
 }
 

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -20,23 +21,26 @@ func GatewayUsecases(interface{}) interface{} {
 func (u *GatewayUsecase) GetMain() *domain.MainPage {
 	museums := make([]*domain.Museum, 0)
 	resp, err := http.Get(utils.MuseumService + utils.MuseumTop)
-	if err != nil {
-		return nil
+	if err == nil {
+		utils.DecodeJSON(resp.Body, &museums)
+		resp.Body.Close()
+	} else {
+		log.Println("Cannot get museums for main:", err)
 	}
-	utils.DecodeJSON(resp.Body, &museums)
-	resp.Body.Close()
 
 	exhibitions := make([]*domain.Exhibition, 0)
 	resp, err = http.Get(utils.ExhibitionService + utils.ExhibitionTop)
-	if err != nil {
-		return &domain.MainPage{Museums: museums}
+	if err == nil {
+		utils.DecodeJSON(resp.Body, &exhibitions)
+		resp.Body.Close()
+	} else {
+		log.Println("Cannot get exhibitions for main:", err)
 	}
-	utils.DecodeJSON(resp.Body, &exhibitions)
-	resp.Body.Close()
 
 	pictures := make([]*domain.Picture, 0)
 	resp, err = http.Get(utils.PictureService + utils.PictureTop)
 	if err != nil {
+		log.Println("Cannot get pictures for main:", err)
 		return &domain.MainPage{Museums: museums, Exhibitions: exhibitions}
 	}
 	defer resp.Body.Close()
@@ -51,6 +55,7 @@ func (u *GatewayUsecase) GetPicture(id int, user *domain.User) (*domain.Picture,
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Cannot get picture:", id, err)
 		return nil, &domain.ErrorResponse{Message: err.Error()}
 	}
 	defer resp.Body.Close()
@@ -70,6 +75,7 @@ func (u *GatewayUsecase) GetExhibition(id int, user *domain.User) (*domain.Exhib
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Cannot get exhibition:", id, err)
 		return nil, &domain.ErrorResponse{Message: err.Error()}
 	} else if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
@@ -86,6 +92,7 @@ func (u *GatewayUsecase) GetExhibition(id int, user *domain.User) (*domain.Exhib
 	}
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Cannot get pictures for exhibition:", id, err)
 		return nil, &domain.ErrorResponse{Message: err.Error()}
 	} else if resp.StatusCode == http.StatusOK {
 		utils.DecodeJSON(resp.Body, &exhibition.Pictures)
@@ -98,6 +105,7 @@ func (u *GatewayUsecase) GetExhibitionPictures(exhibition int) []*domain.Picture
 	pictures := make([]*domain.Picture, 0)
 	resp, err := http.Get(utils.PictureService + utils.PictureByExhibition + fmt.Sprint(exhibition))
 	if err != nil {
+		log.Println("Cannot get pictures for exhibition:", exhibition, err)
 		return nil
 	}
 	defer resp.Body.Close()
@@ -111,6 +119,7 @@ func (u *GatewayUsecase) GetMuseum(id int) (*domain.Museum, *domain.ErrorRespons
 	museum := &domain.Museum{}
 	resp, err := http.Get(utils.MuseumService + strings.Replace(utils.MuseumID, ":id", fmt.Sprint(id), 1))
 	if err != nil {
+		log.Println("Cannot get museum:", id, err)
 		return nil, &domain.ErrorResponse{Message: err.Error()}
 	} else if resp.StatusCode != http.StatusOK {
 		return nil, &domain.ErrorResponse{Message: "Not found"}
@@ -118,7 +127,7 @@ func (u *GatewayUsecase) GetMuseum(id int) (*domain.Museum, *domain.ErrorRespons
 	utils.DecodeJSON(resp.Body, museum)
 	resp.Body.Close()
 
-	museum.Exhibitions = u.GetMuseumExhibitions("museumID=" + fmt.Sprint(museum.ID))
+	museum.Exhibitions = u.GetMuseumExhibitions("?museumID=" + fmt.Sprint(museum.ID))
 	return museum, nil
 }
 
@@ -127,6 +136,7 @@ func (u *GatewayUsecase) GetUserMuseums(user int) []*domain.Museum {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Cannot get user museums:", user, err)
 		return nil
 	}
 	defer resp.Body.Close()
@@ -142,6 +152,7 @@ func (u *GatewayUsecase) GetUserMuseums(user int) []*domain.Museum {
 func (u *GatewayUsecase) GetMuseums(params string) *domain.Page {
 	resp, err := http.Get(utils.MuseumService + utils.BaseMuseumApi + params)
 	if err != nil {
+		log.Println("Cannot get museums:", err)
 		return nil
 	}
 	defer resp.Body.Close()
@@ -156,8 +167,9 @@ func (u *GatewayUsecase) GetMuseums(params string) *domain.Page {
 
 func (u *GatewayUsecase) GetMuseumExhibitions(params string) []*domain.Exhibition {
 	result := make([]*domain.Exhibition, 0)
-	resp, err := http.Get(utils.ExhibitionService + utils.BaseExhibitionApi + "?" + params)
+	resp, err := http.Get(utils.ExhibitionService + utils.BaseExhibitionApi + params)
 	if err != nil {
+		log.Println("Cannot get museum exhibitions:", err)
 		return result
 	}
 	defer resp.Body.Close()
@@ -167,8 +179,9 @@ func (u *GatewayUsecase) GetMuseumExhibitions(params string) []*domain.Exhibitio
 
 func (u *GatewayUsecase) GetExhibitions(params string) *domain.Page {
 	result := &domain.Page{}
-	resp, err := http.Get(utils.ExhibitionService + utils.BaseExhibitionApi + "?" + params)
+	resp, err := http.Get(utils.ExhibitionService + utils.BaseExhibitionApi + params)
 	if err != nil {
+		log.Println("Cannot get exhibitions:", err)
 		return result
 	}
 	defer resp.Body.Close()
@@ -182,6 +195,7 @@ func (u *GatewayUsecase) GetUserExhibitions(user int) []*domain.Exhibition {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Cannot get user exhibitions:", user, err)
 		return nil
 	}
 	defer resp.Body.Close()
@@ -197,7 +211,7 @@ func (u *GatewayUsecase) Search(param, params string) *domain.SearchPage {
 	pictures := make([]*domain.Picture, 0)
 	switch param {
 	case "museum":
-		resp, err := http.Get(utils.MuseumService + utils.BaseMuseumSearch + "?" + params)
+		resp, err := http.Get(utils.MuseumService + utils.BaseMuseumSearch + params)
 		if err != nil {
 			return nil
 		}
@@ -205,7 +219,7 @@ func (u *GatewayUsecase) Search(param, params string) *domain.SearchPage {
 		utils.DecodeJSON(resp.Body, &museums)
 		return &domain.SearchPage{Museums: museums}
 	case "exhibition":
-		resp, err := http.Get(utils.ExhibitionService + utils.BaseExhibitionSearch + "?" + params)
+		resp, err := http.Get(utils.ExhibitionService + utils.BaseExhibitionSearch + params)
 		if err != nil {
 			return nil
 		}
@@ -213,7 +227,7 @@ func (u *GatewayUsecase) Search(param, params string) *domain.SearchPage {
 		utils.DecodeJSON(resp.Body, &exhibitions)
 		return &domain.SearchPage{Exhibitions: exhibitions}
 	case "picture":
-		resp, err := http.Get(utils.PictureService + utils.BasePictureSearch + "?" + params)
+		resp, err := http.Get(utils.PictureService + utils.BasePictureSearch + params)
 		if err != nil {
 			return nil
 		}
@@ -221,26 +235,23 @@ func (u *GatewayUsecase) Search(param, params string) *domain.SearchPage {
 		utils.DecodeJSON(resp.Body, &pictures)
 		return &domain.SearchPage{Pictures: pictures}
 	}
-	resp, err := http.Get(utils.MuseumService + utils.BaseMuseumSearch + "?" + params)
-	if err != nil {
-		return nil
+	resp, err := http.Get(utils.MuseumService + utils.BaseMuseumSearch + params)
+	if err == nil {
+		utils.DecodeJSON(resp.Body, &museums)
+		resp.Body.Close()
 	}
-	utils.DecodeJSON(resp.Body, &museums)
-	resp.Body.Close()
 
-	resp, err = http.Get(utils.ExhibitionService + utils.BaseExhibitionSearch + "?" + params)
-	if err != nil {
-		return &domain.SearchPage{Museums: museums}
+	resp, err = http.Get(utils.ExhibitionService + utils.BaseExhibitionSearch + params)
+	if err == nil {
+		utils.DecodeJSON(resp.Body, &exhibitions)
+		resp.Body.Close()
 	}
-	utils.DecodeJSON(resp.Body, &exhibitions)
-	resp.Body.Close()
 
-	resp, err = http.Get(utils.PictureService + utils.BasePictureSearch + "?" + params)
-	if err != nil {
-		return &domain.SearchPage{Museums: museums, Exhibitions: exhibitions}
+	resp, err = http.Get(utils.PictureService + utils.BasePictureSearch + params)
+	if err == nil {
+		utils.DecodeJSON(resp.Body, &pictures)
+		resp.Body.Close()
 	}
-	defer resp.Body.Close()
-	utils.DecodeJSON(resp.Body, &pictures)
 	return &domain.SearchPage{Museums: museums, Exhibitions: exhibitions, Pictures: pictures}
 }
 
@@ -249,13 +260,14 @@ func (u *GatewayUsecase) SearchByID(param, params string) *domain.SearchPage {
 	var err error
 	switch param {
 	case "exhibition":
-		resp, err = http.Get(utils.ExhibitionService + utils.BaseExhibitionSearch + "?" + params)
+		resp, err = http.Get(utils.ExhibitionService + utils.BaseExhibitionSearch + params)
 	case "picture":
-		resp, err = http.Get(utils.PictureService + utils.BasePictureSearch + "?" + params)
+		resp, err = http.Get(utils.PictureService + utils.BasePictureSearch + params)
 	default:
 		return nil
 	}
 	if err != nil {
+		log.Println("Search param:", param, "error:", err)
 		return nil
 	}
 	defer resp.Body.Close()
@@ -277,6 +289,7 @@ func (u *GatewayUsecase) SearchByID(param, params string) *domain.SearchPage {
 func (u *GatewayUsecase) GetPicturesFav(id string) []*domain.Picture {
 	resp, err := http.Get(utils.PictureService + utils.PictureByIDs + id)
 	if err != nil {
+		log.Println("Cannot get pictures for favourites:", id, err)
 		return nil
 	}
 	defer resp.Body.Close()
@@ -291,6 +304,7 @@ func (u *GatewayUsecase) GetPicturesUser(user int) []*domain.Picture {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Cannot get pictures for user:", user, err)
 		return nil
 	}
 	defer resp.Body.Close()
@@ -306,6 +320,7 @@ func (u *GatewayUsecase) CreateMuseum(museum *domain.Museum, user int) (*domain.
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Museum creating error:", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -323,6 +338,7 @@ func (u *GatewayUsecase) UpdateMuseum(museum *domain.Museum, user int) (*domain.
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Museum updating error:", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -340,6 +356,7 @@ func (u *GatewayUsecase) UpdateMuseumImage(filename string, sizes *domain.ImageS
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Museum image updating error:", err)
 		return &domain.ErrorResponse{Message: "Museum service is unavailable"}
 	}
 	defer resp.Body.Close()
@@ -355,6 +372,7 @@ func (u *GatewayUsecase) CreatePicture(pic *domain.Picture, user int) (*domain.P
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Picture creating error:", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -372,6 +390,7 @@ func (u *GatewayUsecase) UpdatePictureImage(filename string, sizes *domain.Image
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Picture image updating error:", err)
 		return &domain.ErrorResponse{Message: "Picture service is unavailable"}
 	}
 	defer resp.Body.Close()
@@ -387,6 +406,7 @@ func (u *GatewayUsecase) UpdatePictureVideo(filename, size string, pic, user int
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Picture video updating error:", err)
 		return &domain.ErrorResponse{Message: "Picture service is unavailable"}
 	}
 	defer resp.Body.Close()
@@ -402,6 +422,7 @@ func (u *GatewayUsecase) UpdatePicture(picture *domain.Picture, user int) (*doma
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Picture updating error:", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -418,6 +439,7 @@ func (u *GatewayUsecase) ShowMuseum(museum, user int) error {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Museum publishing error:", museum, err)
 		return err
 	}
 	resp.Body.Close()
@@ -429,6 +451,7 @@ func (u *GatewayUsecase) ShowMuseum(museum, user int) error {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Museum exhibitions publishing error:", museum, err)
 		return err
 	}
 	resp.Body.Close()
@@ -440,6 +463,7 @@ func (u *GatewayUsecase) ShowMuseum(museum, user int) error {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Museum pictures publishing error:", museum, err)
 		return err
 	}
 	resp.Body.Close()
@@ -454,6 +478,7 @@ func (u *GatewayUsecase) ShowExhibition(exhibition, user int) error {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Exhibition publishing error:", exhibition, err)
 		return err
 	}
 	resp.Body.Close()
@@ -465,6 +490,7 @@ func (u *GatewayUsecase) ShowExhibition(exhibition, user int) error {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Exhibition pictures publishing error:", exhibition, err)
 		return err
 	}
 	resp.Body.Close()
@@ -479,6 +505,7 @@ func (u *GatewayUsecase) ShowPicture(picture, user int) error {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Picture publishing error:", picture, err)
 		return err
 	}
 	resp.Body.Close()
@@ -491,6 +518,7 @@ func (u *GatewayUsecase) ShowPicture(picture, user int) error {
 func (u *GatewayUsecase) CreateExhibition(exhibition *domain.Exhibition, user int) (*domain.Exhibition, error) {
 	museum := u.GetUserMuseums(user)
 	if museum == nil {
+		log.Println("Cannot get user museum for exhibition change")
 		return nil, errors.New("Unable to create exhibition")
 	}
 
@@ -499,6 +527,7 @@ func (u *GatewayUsecase) CreateExhibition(exhibition *domain.Exhibition, user in
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Exhibition creating error:", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -514,6 +543,7 @@ func (u *GatewayUsecase) CreateExhibition(exhibition *domain.Exhibition, user in
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Pictures to exhibition adding error:", result.ID, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -529,6 +559,7 @@ func (u *GatewayUsecase) UpdateExhibitionImage(filename string, sizes *domain.Im
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Exhibition image updating error:", id, err)
 		return &domain.ErrorResponse{Message: "Exhibition service is unavailable"}
 	}
 	defer resp.Body.Close()
@@ -541,6 +572,7 @@ func (u *GatewayUsecase) UpdateExhibitionImage(filename string, sizes *domain.Im
 func (u *GatewayUsecase) UpdateExhibition(exhibition *domain.Exhibition, user int) (*domain.Exhibition, error) {
 	museum := u.GetUserMuseums(user)
 	if museum == nil {
+		log.Println("Cannot get user museum for exhibition change")
 		return nil, errors.New("Unable to update exhibition")
 	}
 
@@ -549,6 +581,7 @@ func (u *GatewayUsecase) UpdateExhibition(exhibition *domain.Exhibition, user in
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Exhibition updating error:", exhibition.ID, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -564,6 +597,7 @@ func (u *GatewayUsecase) UpdateExhibition(exhibition *domain.Exhibition, user in
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Pictures to exhibition adding error:", result.ID, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -578,6 +612,7 @@ func (u *GatewayUsecase) DeletePicture(id, user int) error {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Picture deleting error:", id, err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -592,6 +627,7 @@ func (u *GatewayUsecase) DeleteExhibition(id, user int) error {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("exhibition deleting error:", id, err)
 		return err
 	}
 	resp.Body.Close()
@@ -604,6 +640,7 @@ func (u *GatewayUsecase) DeleteExhibition(id, user int) error {
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("Pictures to exhibition deleting error:", id, err)
 		return err
 	}
 	resp.Body.Close()

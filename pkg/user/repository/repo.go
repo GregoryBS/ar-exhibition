@@ -4,6 +4,7 @@ import (
 	"ar_exhibition/pkg/database"
 	"ar_exhibition/pkg/domain"
 	"context"
+	"log"
 )
 
 const (
@@ -20,6 +21,7 @@ func UserRepo(db interface{}) interface{} {
 	if ok {
 		return &UserRepository{db: instance}
 	}
+	log.Println("Unknown object instead of db-manager")
 	return nil
 }
 

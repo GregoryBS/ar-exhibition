@@ -4,11 +4,11 @@ import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/gateway/usecase"
 	"ar_exhibition/pkg/utils"
-	"fmt"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -32,6 +32,7 @@ func GatewayHandlers(usecases interface{}) interface{} {
 	if ok {
 		return &GatewayHandler{u: instance}
 	}
+	log.Println("Unknown object instead of gateway handler")
 	return nil
 }
 
@@ -147,24 +148,24 @@ func (h *GatewayHandler) GetExhibitions(ctx aero.Context) error {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Authorization error"})
 	} else if url.Query().Has("museumID") {
-		exhibitions := h.u.GetMuseumExhibitions(url.RawQuery)
+		exhibitions := h.u.GetMuseumExhibitions("?" + url.RawQuery)
 		return ctx.JSON(exhibitions)
 	}
-	content := h.u.GetExhibitions(url.RawQuery)
+	content := h.u.GetExhibitions("?" + url.RawQuery)
 	return ctx.JSON(content)
 }
 
 func (h *GatewayHandler) Search(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL
 	if url.Query().Has("id") {
-		result := h.u.SearchByID(url.Query().Get("type"), url.RawQuery)
+		result := h.u.SearchByID(url.Query().Get("type"), "?"+url.RawQuery)
 		if result == nil {
 			ctx.SetStatus(http.StatusNotFound)
 			return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
 		}
 		return ctx.JSON(result)
 	}
-	content := h.u.Search(url.Query().Get("type"), url.RawQuery)
+	content := h.u.Search(url.Query().Get("type"), "?"+url.RawQuery)
 	if content == nil {
 		ctx.SetStatus(http.StatusNotFound)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not found"})
@@ -196,6 +197,7 @@ func (h *GatewayHandler) GetPictures(ctx aero.Context) error {
 func (h *GatewayHandler) CreateMuseum(ctx aero.Context) error {
 	museum := new(domain.Museum)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), museum); err != nil {
+		log.Println("Invalid museum json")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to create"})
 	}
@@ -207,6 +209,7 @@ func (h *GatewayHandler) CreateMuseum(ctx aero.Context) error {
 	}
 	museum, err := h.u.CreateMuseum(museum, user.ID)
 	if err != nil {
+		log.Println("Cannot create museum for user: ", user.ID)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
@@ -216,24 +219,27 @@ func (h *GatewayHandler) CreateMuseum(ctx aero.Context) error {
 func (h *GatewayHandler) UpdateMuseum(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
 	user := checkAuth(ctx.Request().Header("Authorization"))
-	if user == nil {
+	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
 	}
 
 	museum := new(domain.Museum)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), museum); err != nil {
+		log.Println("Invalid museum json")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})
 	}
 	museum.ID = id
 	museum, err = h.u.UpdateMuseum(museum, user.ID)
-	if err != nil || user.ID <= 0 {
+	if err != nil {
+		log.Println("Cannot update museum for user: ", user.ID)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
@@ -243,6 +249,7 @@ func (h *GatewayHandler) UpdateMuseum(ctx aero.Context) error {
 func (h *GatewayHandler) UpdateMuseumImage(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
@@ -255,11 +262,13 @@ func (h *GatewayHandler) UpdateMuseumImage(ctx aero.Context) error {
 
 	image, sizes := uploadFiles(ctx.Request().Internal())
 	if image == "" {
+		log.Println("image url is blank")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload museum image"})
 	}
 	result := h.u.UpdateMuseumImage(image, sizes.(*domain.ImageSize), id, user.ID)
 	if result != nil {
+		log.Println("Cannot update museum image for user: ", user.ID)
 		ctx.SetStatus(http.StatusBadRequest)
 	}
 	return ctx.JSON(result)
@@ -268,6 +277,7 @@ func (h *GatewayHandler) UpdateMuseumImage(ctx aero.Context) error {
 func (h *GatewayHandler) CreatePicture(ctx aero.Context) error {
 	pic := new(domain.Picture)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), pic); err != nil {
+		log.Println("Invalid picture json")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to create"})
 	}
@@ -279,6 +289,7 @@ func (h *GatewayHandler) CreatePicture(ctx aero.Context) error {
 	}
 	pic, err := h.u.CreatePicture(pic, user.ID)
 	if err != nil {
+		log.Println("Cannot create picture for user: ", user.ID)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
@@ -288,6 +299,7 @@ func (h *GatewayHandler) CreatePicture(ctx aero.Context) error {
 func (h *GatewayHandler) UpdatePictureImage(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
@@ -300,11 +312,13 @@ func (h *GatewayHandler) UpdatePictureImage(ctx aero.Context) error {
 
 	image, sizes := uploadFiles(ctx.Request().Internal())
 	if image == "" {
+		log.Println("image url is blank")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload picture image"})
 	}
 	result := h.u.UpdatePictureImage(image, sizes.(*domain.ImageSize), id, user.ID)
 	if result != nil {
+		log.Println("Cannot update picture image with id:", id, "for user: ", user.ID)
 		ctx.SetStatus(http.StatusBadRequest)
 	}
 	return ctx.JSON(result)
@@ -313,6 +327,7 @@ func (h *GatewayHandler) UpdatePictureImage(ctx aero.Context) error {
 func (h *GatewayHandler) UpdatePictureVideo(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
@@ -325,11 +340,13 @@ func (h *GatewayHandler) UpdatePictureVideo(ctx aero.Context) error {
 
 	video, size := uploadFiles(ctx.Request().Internal())
 	if video == "" {
+		log.Println("video url is blank")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload picture video"})
 	}
 	result := h.u.UpdatePictureVideo(video, size.(string), id, user.ID)
 	if result != nil {
+		log.Println("Cannot update picture video with id:", id, "for user: ", user.ID)
 		ctx.SetStatus(http.StatusBadRequest)
 	}
 	return ctx.JSON(result)
@@ -368,7 +385,7 @@ func uploadFiles(r *http.Request) (string, interface{}) {
 			filename := utils.RandString(32) + filepath.Ext(part.FileName())
 			file, err := createFile(PicsDir, filename)
 			if err != nil {
-				fmt.Println("Error while creating file:", err.Error())
+				log.Println("Error while creating file for image:", err.Error())
 				continue
 			}
 			_, err = io.Copy(file, part)
@@ -396,7 +413,7 @@ func uploadFiles(r *http.Request) (string, interface{}) {
 			filename := utils.RandString(32) + filepath.Ext(part.FileName())
 			file, err := createFile(VideoDir, filename)
 			if err != nil {
-				fmt.Println("Error while creating file:", err.Error())
+				log.Println("Error while creating file for video:", err.Error())
 				return "", nil
 			}
 			defer file.Close()
@@ -432,6 +449,7 @@ func createFile(dir, name string) (*os.File, error) {
 func (h *GatewayHandler) UpdatePicture(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
@@ -444,12 +462,14 @@ func (h *GatewayHandler) UpdatePicture(ctx aero.Context) error {
 
 	picture := new(domain.Picture)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), picture); err != nil {
+		log.Println("Invalid picture json")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to update"})
 	}
 	picture.ID = id
 	picture, err = h.u.UpdatePicture(picture, user.ID)
 	if err != nil {
+		log.Println("Cannot update picture with id:", id, "for user: ", user.ID)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
@@ -459,6 +479,7 @@ func (h *GatewayHandler) UpdatePicture(ctx aero.Context) error {
 func (h *GatewayHandler) ShowMuseum(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
@@ -471,6 +492,7 @@ func (h *GatewayHandler) ShowMuseum(ctx aero.Context) error {
 
 	err = h.u.ShowMuseum(id, user.ID)
 	if err != nil {
+		log.Println("Unable to publish museum with id:", id)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
@@ -480,6 +502,7 @@ func (h *GatewayHandler) ShowMuseum(ctx aero.Context) error {
 func (h *GatewayHandler) ShowExhibition(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
@@ -492,6 +515,7 @@ func (h *GatewayHandler) ShowExhibition(ctx aero.Context) error {
 
 	err = h.u.ShowExhibition(id, user.ID)
 	if err != nil {
+		log.Println("Unable to publish exhibition with id:", id)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
@@ -501,6 +525,7 @@ func (h *GatewayHandler) ShowExhibition(ctx aero.Context) error {
 func (h *GatewayHandler) ShowPicture(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
@@ -513,6 +538,7 @@ func (h *GatewayHandler) ShowPicture(ctx aero.Context) error {
 
 	err = h.u.ShowPicture(id, user.ID)
 	if err != nil {
+		log.Println("Unable to publish picture with id:", id)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
@@ -522,6 +548,7 @@ func (h *GatewayHandler) ShowPicture(ctx aero.Context) error {
 func (h *GatewayHandler) CreateExhibition(ctx aero.Context) error {
 	exhibition := new(domain.Exhibition)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), exhibition); err != nil {
+		log.Println("Invalid exhibition json")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to create"})
 	}
@@ -533,6 +560,7 @@ func (h *GatewayHandler) CreateExhibition(ctx aero.Context) error {
 	}
 	exhibition, err := h.u.CreateExhibition(exhibition, user.ID)
 	if err != nil {
+		log.Println("Cannot create exhibition for user: ", user.ID)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
@@ -542,6 +570,7 @@ func (h *GatewayHandler) CreateExhibition(ctx aero.Context) error {
 func (h *GatewayHandler) UpdateExhibition(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
@@ -554,12 +583,14 @@ func (h *GatewayHandler) UpdateExhibition(ctx aero.Context) error {
 
 	exhibition := new(domain.Exhibition)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), exhibition); err != nil {
+		log.Println("Invalid exhibition json")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
 	}
 	exhibition.ID = id
 	exhibition, err = h.u.UpdateExhibition(exhibition, user.ID)
 	if err != nil {
+		log.Println("Cannot update exhibition with id:", id, "for user: ", user.ID)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: err.Error()})
 	}
@@ -569,6 +600,7 @@ func (h *GatewayHandler) UpdateExhibition(ctx aero.Context) error {
 func (h *GatewayHandler) UpdateExhibitionImage(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
@@ -581,11 +613,13 @@ func (h *GatewayHandler) UpdateExhibitionImage(ctx aero.Context) error {
 
 	image, sizes := uploadFiles(ctx.Request().Internal())
 	if image == "" {
+		log.Println("image url is blank")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Unable to upload exhibition image"})
 	}
 	result := h.u.UpdateExhibitionImage(image, sizes.(*domain.ImageSize), id, user.ID)
 	if result != nil {
+		log.Println("Cannot update exhibition image with id:", id, "for user: ", user.ID)
 		ctx.SetStatus(http.StatusBadRequest)
 	}
 	return ctx.JSON(result)
@@ -594,6 +628,7 @@ func (h *GatewayHandler) UpdateExhibitionImage(ctx aero.Context) error {
 func (h *GatewayHandler) DeletePicture(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
@@ -614,6 +649,7 @@ func (h *GatewayHandler) DeletePicture(ctx aero.Context) error {
 func (h *GatewayHandler) DeleteExhibition(ctx aero.Context) error {
 	id, err := strconv.Atoi(ctx.Get("id"))
 	if err != nil {
+		log.Println("Bad url")
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
