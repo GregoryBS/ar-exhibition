@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 type ImageSize struct {
 	Height float32 `json:"height,omitempty"`
 	Width  float32 `json:"width,omitempty"`
@@ -79,4 +81,13 @@ type User struct {
 type MuseumExhibition struct {
 	Mus *Museum     `json:"museum,omitempty"`
 	Exh *Exhibition `json:"exhibition,omitempty"`
+}
+
+type Stats struct {
+	Port     int       `json:"port"`
+	Method   string    `json:"method"`
+	Status   int       `json:"status"`
+	URL      string    `json:"url,omitempty"`
+	Duration int       `json:"duration"`
+	When     time.Time `json:"when,omitempty"`
 }

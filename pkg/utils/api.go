@@ -6,8 +6,10 @@ const (
 	PictureService    = "http://picture:8083"
 	UserService       = "http://user:8000"
 	GatewayService    = "http://gateway:8080"
+	StatService       = "http://statistics:8084"
 	ImageService      = "http://95.163.213.222/images/"
 	VideoService      = "http://95.163.213.222/videos/"
+	RedisService      = "queue:6379"
 )
 
 const (
@@ -26,6 +28,7 @@ const (
 	GatewayApiMuseumShow      = "/api/v1/museums/:id/public"
 	GatewayApiExhibitionShow  = "/api/v1/exhibitions/:id/public"
 	GatewayApiPictureShow     = "/api/v1/pictures/:id/public"
+	GatewayApiStats           = "/api/v1/stats"
 )
 
 const (
@@ -78,6 +81,13 @@ const (
 	UserSignup  = BaseUserApi + "/signup"
 	UserLogin   = BaseUserApi + "/login"
 	UserID      = BaseUserApi + "/id"
+	UserAdmin   = BaseUserApi + "/:id/admin"
 )
 
 const UserHeader = "X-User"
+
+const (
+	BaseStatApi = "/api/v1/stats"
+)
+
+const MsgTag = "stats"
