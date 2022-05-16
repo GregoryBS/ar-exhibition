@@ -9,6 +9,7 @@ import (
 
 func main() {
 	server.Run(handler.ConfigureExhibition,
+		nil,
 		handler.ExhibitionHandlers,
 		usecase.ExhibitionUsecases,
 		repository.ExhibitionRepo)

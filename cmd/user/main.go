@@ -9,6 +9,7 @@ import (
 
 func main() {
 	server.Run(handler.ConfigureUser,
+		nil,
 		handler.UserHandlers,
 		usecase.UserUsecases,
 		repository.UserRepo)

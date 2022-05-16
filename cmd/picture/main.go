@@ -9,6 +9,7 @@ import (
 
 func main() {
 	server.Run(handler.ConfigurePicture,
+		nil,
 		handler.PictureHandlers,
 		usecase.PictureUsecases,
 		repository.PictureRepo)

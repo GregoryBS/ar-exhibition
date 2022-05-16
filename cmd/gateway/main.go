@@ -8,6 +8,7 @@ import (
 
 func main() {
 	server.Run(handler.ConfigureGateway,
+		nil,
 		handler.GatewayHandlers,
 		usecase.GatewayUsecases)
 }

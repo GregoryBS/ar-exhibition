@@ -9,6 +9,7 @@ import (
 
 func main() {
 	server.Run(handler.ConfigureMuseum,
+		nil,
 		handler.MuseumHandlers,
 		usecase.MuseumUsecases,
 		repository.MuseumRepo)
