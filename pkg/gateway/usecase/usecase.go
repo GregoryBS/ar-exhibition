@@ -90,3 +90,26 @@ func (u *GatewayUsecase) DeleteExhibition(id, user int) error {
 	}
 	return nil
 }
+
+func (u *GatewayUsecase) GetStats(user *domain.User, params string) []*domain.Stats {
+	resp, err := http.Get(utils.UserService + strings.Replace(utils.UserAdmin, ":id", fmt.Sprint(user.ID), 1))
+	if err != nil {
+		log.Println("Error while checking user is admin", err)
+		return nil
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		log.Println("user is not admin")
+		return nil
+	}
+
+	resp, err = http.Get(utils.StatService + utils.BaseStatApi + params)
+	if err != nil {
+		log.Println("Canot get stats", err)
+		return nil
+	}
+	defer resp.Body.Close()
+	result := make([]*domain.Stats, 0)
+	utils.DecodeJSON(resp.Body, &result)
+	return result
+}

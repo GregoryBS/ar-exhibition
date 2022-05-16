@@ -135,3 +135,13 @@ func (h *GatewayHandler) Search(ctx aero.Context) error {
 	}
 	return ctx.JSON(content)
 }
+
+func (h *GatewayHandler) GetStats(ctx aero.Context) error {
+	url := ctx.Request().Internal().URL
+	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
+		result := h.u.GetStats(user, "?"+url.RawQuery)
+		return ctx.JSON(result)
+	}
+	ctx.SetStatus(http.StatusForbidden)
+	return nil
+}

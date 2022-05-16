@@ -61,6 +61,7 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 		app.Post(utils.GatewayApiPictureShow, h.ShowPicture)
 		app.Delete(utils.GatewayApiPictureID, h.DeletePicture)
 		app.Delete(utils.GatewayApiExhibitionID, h.DeleteExhibition)
+		app.Get(utils.GatewayApiStats, h.GetStats)
 	}
 	return app
 }
