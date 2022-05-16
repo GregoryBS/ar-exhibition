@@ -22,6 +22,9 @@ services:
       - exhibition
       - picture
       - user
+      - statistics
+    environment:
+      PORT: 8080
     ports:
       - 8080:8080
     volumes: 
@@ -36,6 +39,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - database
+      - queue
     environment:
       DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
       PORT: 8081
@@ -48,6 +52,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - database
+      - queue
     environment:
       DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
       PORT: 8082
@@ -60,6 +65,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - database
+      - queue
     environment:
       DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
       PORT: 8083
@@ -72,11 +78,33 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - database
+      - queue
     environment:
       DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
       PORT: 8000
     ports:
       - 8000:8000
 
+  statistics:
+    build:
+      context: .
+      args:
+        service: statistics
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+      - queue
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres"
+      PORT: 8084
+
+  queue:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning
+    volumes: 
+      - cache:/data
+
 volumes:
   db-data:
+  cache:
