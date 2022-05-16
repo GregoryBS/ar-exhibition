@@ -2,37 +2,12 @@ package server
 
 import (
 	"ar_exhibition/pkg/database"
-	"log"
-	"net/http"
-	"os"
-	"strconv"
-	"time"
 
 	"github.com/aerogo/aero"
 )
 
-func PanicRecover(next aero.Handler) aero.Handler {
-	return func(ctx aero.Context) error {
-		defer func() {
-			if err := recover(); err != nil {
-				log.Printf("Recovered from panic with err: '%s' on url: %s\n", err, ctx.Path())
-				ctx.Error(http.StatusInternalServerError)
-			}
-		}()
-		return next(ctx)
-	}
-}
-
-func Logging(next aero.Handler) aero.Handler {
-	return func(ctx aero.Context) error {
-		start := time.Now()
-		err := next(ctx)
-		log.Println(ctx.Request().Method(), ctx.Request().Internal().RequestURI, ctx.Status(), time.Since(start))
-		return err
-	}
-}
-
 func Run(Configure func(*aero.Application, interface{}) *aero.Application,
+	stat func(interface{}),
 	funcs ...func(interface{}) interface{}) {
 	app := aero.New()
 	app.Use(PanicRecover, Logging)
@@ -41,7 +16,6 @@ func Run(Configure func(*aero.Application, interface{}) *aero.Application,
 	var repo, usecases, handlers interface{}
 	switch len(funcs) {
 	case 3:
-		port, _ := strconv.Atoi(os.Getenv("PORT"))
 		app.Config.Ports.HTTP = port
 		db = database.Connect()
 		repo = funcs[2](db)
@@ -49,6 +23,9 @@ func Run(Configure func(*aero.Application, interface{}) *aero.Application,
 	case 2:
 		usecases = funcs[1](repo)
 		handlers = funcs[0](usecases)
+	}
+	if stat != nil {
+		go stat(handlers)
 	}
 
 	app.OnEnd(func() {
