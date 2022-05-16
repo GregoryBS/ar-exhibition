@@ -4,12 +4,14 @@ import (
 	"ar_exhibition/pkg/database"
 	"ar_exhibition/pkg/domain"
 	"context"
+	"errors"
 	"log"
 )
 
 const (
 	queryInsert      = `insert into users(login, password) values($1,$2) returning id, login;`
 	querySelectLogin = `select id, login, password from users where login = $1;`
+	queryAdmin       = `select id from users where id = $1 and admin = '1'`
 )
 
 type UserRepository struct {
@@ -43,4 +45,13 @@ func (repo *UserRepository) GetByLogin(login string) (*domain.User, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func (repo *UserRepository) IsAdmin(id int) error {
+	rows, err := repo.db.Pool.Query(context.Background(), queryAdmin, id)
+	if err != nil || rows.CommandTag().RowsAffected() == 0 {
+		log.Println("Admin check failed", err, rows.CommandTag().RowsAffected())
+		return errors.New("Not admin")
+	}
+	return nil
 }

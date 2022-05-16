@@ -45,3 +45,7 @@ func (u *UserUsecase) Login(user *domain.User) (*domain.User, error) {
 	}
 	return loginUser, nil
 }
+
+func (u UserUsecase) CheckAdmin(id int) error {
+	return u.repo.IsAdmin(id)
+}

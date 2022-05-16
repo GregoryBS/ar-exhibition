@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/aerogo/aero"
 )
@@ -31,6 +32,7 @@ func ConfigureUser(app *aero.Application, handlers interface{}) *aero.Applicatio
 		app.Post(utils.UserSignup, h.Signup)
 		app.Post(utils.UserLogin, h.Login)
 		app.Get(utils.UserID, h.Check)
+		app.Get(utils.UserAdmin, h.CheckAdmin)
 	}
 	return app
 }
@@ -104,9 +106,21 @@ func (h *UserHandler) Login(ctx aero.Context) error {
 
 func (h *UserHandler) Check(ctx aero.Context) error {
 	id := user.CheckJWT(ctx.Request().Header("Authorization"))
-	if id != 0 {
+	if id > 0 {
 		return ctx.JSON(domain.User{ID: id})
 	}
 	ctx.SetStatus(http.StatusUnauthorized)
 	return ctx.JSON(domain.ErrorResponse{Message: "user not authorized"})
+}
+
+func (h *UserHandler) CheckAdmin(ctx aero.Context) error {
+	id, _ := strconv.Atoi(ctx.Get("id"))
+	if id == 0 {
+		log.Println("Invalid user id")
+	}
+
+	if h.u.CheckAdmin(id) != nil {
+		ctx.SetStatus(http.StatusForbidden)
+	}
+	return nil
 }
