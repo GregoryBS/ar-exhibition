@@ -10,16 +10,17 @@ import (
 )
 
 func (u *GatewayUsecase) GetMuseum(id int) (*domain.Museum, *domain.ErrorResponse) {
-	museum := &domain.Museum{}
 	resp, err := http.Get(utils.MuseumService + strings.Replace(utils.MuseumID, ":id", fmt.Sprint(id), 1))
 	if err != nil {
 		log.Println("Cannot get museum:", id, err)
 		return nil, &domain.ErrorResponse{Message: err.Error()}
-	} else if resp.StatusCode != http.StatusOK {
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
 		return nil, &domain.ErrorResponse{Message: "Not found"}
 	}
+	museum := &domain.Museum{}
 	utils.DecodeJSON(resp.Body, museum)
-	resp.Body.Close()
 
 	museum.Exhibitions = u.GetMuseumExhibitions("?museumID=" + fmt.Sprint(museum.ID))
 	return museum, nil

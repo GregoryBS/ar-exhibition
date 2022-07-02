@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func (u *GatewayUsecase) ShowMuseum(museum, user int) error {
@@ -24,27 +25,29 @@ func (u *GatewayUsecase) ShowMuseum(museum, user int) error {
 
 	req, _ = http.NewRequest(http.MethodPost, utils.ExhibitionService+utils.ExhibitionShow, nil)
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
-	resp, err = http.DefaultClient.Do(req)
-	if err != nil {
-		log.Println("Museum exhibitions publishing error:", museum, err)
-		return err
-	}
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("Unable to publish museum exhibitions")
-	}
+	u.q.Push(req, time.Now().Add(time.Second))
+	// resp, err = http.DefaultClient.Do(req)
+	// if err != nil {
+	// 	log.Println("Museum exhibitions publishing error:", museum, err)
+	// 	return err
+	// }
+	// resp.Body.Close()
+	// if resp.StatusCode != http.StatusOK {
+	// 	return errors.New("Unable to publish museum exhibitions")
+	// }
 
 	req, _ = http.NewRequest(http.MethodPost, utils.PictureService+utils.PictureShow, nil)
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
-	resp, err = http.DefaultClient.Do(req)
-	if err != nil {
-		log.Println("Museum pictures publishing error:", museum, err)
-		return err
-	}
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("Unable to publish museum pictures")
-	}
+	u.q.Push(req, time.Now().Add(time.Second))
+	// resp, err = http.DefaultClient.Do(req)
+	// if err != nil {
+	// 	log.Println("Museum pictures publishing error:", museum, err)
+	// 	return err
+	// }
+	// resp.Body.Close()
+	// if resp.StatusCode != http.StatusOK {
+	// 	return errors.New("Unable to publish museum pictures")
+	// }
 	return nil
 }
 
@@ -63,15 +66,16 @@ func (u *GatewayUsecase) ShowExhibition(exhibition, user int) error {
 
 	req, _ = http.NewRequest(http.MethodPost, utils.PictureService+utils.PictureShowExh+fmt.Sprint(exhibition), nil)
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
-	resp, err = http.DefaultClient.Do(req)
-	if err != nil {
-		log.Println("Exhibition pictures publishing error:", exhibition, err)
-		return err
-	}
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("Unable to publish exhibition pictures")
-	}
+	u.q.Push(req, time.Now().Add(time.Second))
+	// resp, err = http.DefaultClient.Do(req)
+	// if err != nil {
+	// 	log.Println("Exhibition pictures publishing error:", exhibition, err)
+	// 	return err
+	// }
+	// resp.Body.Close()
+	// if resp.StatusCode != http.StatusOK {
+	// 	return errors.New("Unable to publish exhibition pictures")
+	// }
 	return nil
 }
 

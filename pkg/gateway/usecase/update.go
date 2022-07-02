@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func (u *GatewayUsecase) UpdateMuseum(museum *domain.Museum, user int) (*domain.Museum, error) {
@@ -121,15 +122,17 @@ func (u *GatewayUsecase) UpdateExhibition(exhibition *domain.Exhibition, user in
 	req, _ = http.NewRequest(http.MethodPost, utils.PictureService+utils.PicturesToExh,
 		bytes.NewBuffer(utils.EncodeJSON(domain.MuseumExhibition{Mus: museum[0], Exh: result})))
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
-	resp, err = http.DefaultClient.Do(req)
-	if err != nil {
-		log.Println("Pictures to exhibition adding error:", result.ID, err)
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("Unable to update exhibition")
-	}
+	u.q.Push(req, time.Now().Add(time.Millisecond))
+
+	// resp, err = http.DefaultClient.Do(req)
+	// if err != nil {
+	// 	log.Println("Pictures to exhibition adding error:", result.ID, err)
+	// 	return nil, err
+	// }
+	// defer resp.Body.Close()
+	// if resp.StatusCode != http.StatusOK {
+	// 	return nil, errors.New("Unable to update exhibition")
+	// }
 	return result, nil
 }
 

@@ -3,19 +3,24 @@ package usecase
 import (
 	"ar_exhibition/pkg/domain"
 	"ar_exhibition/pkg/utils"
+	"ar_exhibition/pkg/utils/queue"
 	"bytes"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type GatewayUsecase struct {
+	q *queue.Queue
 }
 
 func GatewayUsecases(interface{}) interface{} {
-	return &GatewayUsecase{}
+	q := queue.NewQueue()
+	go queue.Execute(q)
+	return &GatewayUsecase{q: q}
 }
 
 func (u *GatewayUsecase) GetMain() *domain.MainPage {
@@ -39,12 +44,12 @@ func (u *GatewayUsecase) GetMain() *domain.MainPage {
 
 	pictures := make([]*domain.Picture, 0)
 	resp, err = http.Get(utils.PictureService + utils.PictureTop)
-	if err != nil {
+	if err == nil {
+		utils.DecodeJSON(resp.Body, &pictures)
+		resp.Body.Close()
+	} else {
 		log.Println("Cannot get pictures for main:", err)
-		return &domain.MainPage{Museums: museums, Exhibitions: exhibitions}
 	}
-	defer resp.Body.Close()
-	utils.DecodeJSON(resp.Body, &pictures)
 	return &domain.MainPage{Museums: museums, Exhibitions: exhibitions, Pictures: pictures}
 }
 
@@ -79,15 +84,16 @@ func (u *GatewayUsecase) DeleteExhibition(id, user int) error {
 	req, _ = http.NewRequest(http.MethodPost, utils.PictureService+utils.PicturesToExh,
 		bytes.NewBuffer(utils.EncodeJSON(domain.MuseumExhibition{Exh: &domain.Exhibition{ID: id}})))
 	req.Header.Set(utils.UserHeader, fmt.Sprint(user))
-	resp, err = http.DefaultClient.Do(req)
-	if err != nil {
-		log.Println("Pictures to exhibition deleting error:", id, err)
-		return err
-	}
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("Unable to delete exhibition")
-	}
+	u.q.Push(req, time.Now().Add(time.Second))
+	// resp, err = http.DefaultClient.Do(req)
+	// if err != nil {
+	// 	log.Println("Pictures to exhibition deleting error:", id, err)
+	// 	return err
+	// }
+	// resp.Body.Close()
+	// if resp.StatusCode != http.StatusOK {
+	// 	return errors.New("Unable to delete exhibition")
+	// }
 	return nil
 }
 
