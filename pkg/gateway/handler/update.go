@@ -18,7 +18,7 @@ func (h *GatewayHandler) UpdateMuseum(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
@@ -26,7 +26,7 @@ func (h *GatewayHandler) UpdateMuseum(ctx aero.Context) error {
 
 	museum := new(domain.Museum)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), museum); err != nil {
-		log.Println("Invalid museum json")
+		log.Println("Invalid museum json:", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to update"})
 	}
@@ -48,7 +48,7 @@ func (h *GatewayHandler) UpdateMuseumImage(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
@@ -76,7 +76,7 @@ func (h *GatewayHandler) UpdatePicture(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
@@ -84,7 +84,7 @@ func (h *GatewayHandler) UpdatePicture(ctx aero.Context) error {
 
 	picture := new(domain.Picture)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), picture); err != nil {
-		log.Println("Invalid picture json")
+		log.Println("Invalid picture json:", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to update"})
 	}
@@ -106,7 +106,7 @@ func (h *GatewayHandler) UpdatePictureImage(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
@@ -134,7 +134,7 @@ func (h *GatewayHandler) UpdatePictureVideo(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
@@ -162,7 +162,7 @@ func (h *GatewayHandler) UpdateExhibition(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
@@ -170,7 +170,7 @@ func (h *GatewayHandler) UpdateExhibition(ctx aero.Context) error {
 
 	exhibition := new(domain.Exhibition)
 	if err := utils.DecodeJSON(ctx.Request().Body().Reader(), exhibition); err != nil {
-		log.Println("Invalid exhibition json")
+		log.Println("Invalid exhibition json:", err)
 		ctx.SetStatus(http.StatusBadRequest)
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to update"})
 	}
@@ -192,7 +192,7 @@ func (h *GatewayHandler) UpdateExhibitionImage(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})

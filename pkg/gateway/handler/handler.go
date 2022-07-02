@@ -68,7 +68,7 @@ func ConfigureGateway(app *aero.Application, handlers interface{}) *aero.Applica
 
 func checkAuth(header string) *domain.User {
 	req, _ := http.NewRequest(http.MethodGet, utils.UserService+utils.UserID, nil)
-	req.Header.Set("Authorization", header)
+	req.Header.Set(utils.AuthHeader, header)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil
@@ -116,7 +116,7 @@ func uploadFiles(r *http.Request) (string, interface{}) {
 			}
 		case "image_url":
 			buf := make([]byte, 1024)
-			if s, err := part.Read(buf); err == nil {
+			if s, err := part.Read(buf); err == nil || err == io.EOF {
 				urls := strings.Split(string(buf[:s]), ",")
 				for i := range urls {
 					urls[i] = urls[i][strings.LastIndex(urls[i], "/")+1:]
@@ -133,13 +133,16 @@ func uploadFiles(r *http.Request) (string, interface{}) {
 			defer file.Close()
 			_, err = io.Copy(file, part)
 			if err != nil {
+				log.Println("video copy error:", err)
 				return "", nil
 			}
 			files = append(files, filename)
 		case "video_size":
 			buf := make([]byte, 1024)
-			if s, err := part.Read(buf); err == nil {
+			if s, err := part.Read(buf); err == nil || err == io.EOF {
 				sizes = string(buf[:s])
+			} else {
+				log.Println("video_size read error:", err)
 			}
 		default:
 			continue

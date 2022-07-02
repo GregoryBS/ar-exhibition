@@ -2,6 +2,7 @@ package handler
 
 import (
 	"ar_exhibition/pkg/domain"
+	"ar_exhibition/pkg/utils"
 	"log"
 	"net/http"
 	"strconv"
@@ -17,7 +18,7 @@ func (h *GatewayHandler) DeletePicture(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
@@ -38,7 +39,7 @@ func (h *GatewayHandler) DeleteExhibition(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})

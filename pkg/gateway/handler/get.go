@@ -2,6 +2,7 @@ package handler
 
 import (
 	"ar_exhibition/pkg/domain"
+	"ar_exhibition/pkg/utils"
 	"net/http"
 	"strconv"
 
@@ -20,7 +21,7 @@ func (h *GatewayHandler) GetPicture(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	picture, msg := h.u.GetPicture(id, checkAuth(ctx.Request().Header("Authorization")))
+	picture, msg := h.u.GetPicture(id, checkAuth(ctx.Request().Header(utils.AuthHeader)))
 	if msg != nil {
 		ctx.SetStatus(http.StatusNotFound)
 		return ctx.JSON(msg)
@@ -35,7 +36,7 @@ func (h *GatewayHandler) GetExhibition(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "id not a number"})
 	}
 
-	exhibition, msg := h.u.GetExhibition(id, checkAuth(ctx.Request().Header("Authorization")))
+	exhibition, msg := h.u.GetExhibition(id, checkAuth(ctx.Request().Header(utils.AuthHeader)))
 	if msg != nil {
 		ctx.SetStatus(http.StatusNotFound)
 		return ctx.JSON(msg)
@@ -60,7 +61,7 @@ func (h *GatewayHandler) GetMuseum(ctx aero.Context) error {
 
 func (h *GatewayHandler) GetMuseums(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL
-	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
+	if user := checkAuth(ctx.Request().Header(utils.AuthHeader)); user != nil {
 		if user.ID > 0 {
 			museums := h.u.GetUserMuseums(user.ID)
 			if museums == nil {
@@ -82,7 +83,7 @@ func (h *GatewayHandler) GetMuseums(ctx aero.Context) error {
 
 func (h *GatewayHandler) GetExhibitions(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL
-	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
+	if user := checkAuth(ctx.Request().Header(utils.AuthHeader)); user != nil {
 		if user.ID > 0 {
 			exhibitions := h.u.GetUserExhibitions(user.ID)
 			return ctx.JSON(exhibitions)
@@ -101,7 +102,7 @@ func (h *GatewayHandler) GetPictures(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL.Query()
 	ids := url.Get("id")
 	var pictures []*domain.Picture
-	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
+	if user := checkAuth(ctx.Request().Header(utils.AuthHeader)); user != nil {
 		if user.ID > 0 {
 			pictures = h.u.GetPicturesUser(user.ID)
 		}
@@ -138,7 +139,7 @@ func (h *GatewayHandler) Search(ctx aero.Context) error {
 
 func (h *GatewayHandler) GetStats(ctx aero.Context) error {
 	url := ctx.Request().Internal().URL
-	if user := checkAuth(ctx.Request().Header("Authorization")); user != nil {
+	if user := checkAuth(ctx.Request().Header(utils.AuthHeader)); user != nil {
 		result := h.u.GetStats(user, "?"+url.RawQuery)
 		return ctx.JSON(result)
 	}

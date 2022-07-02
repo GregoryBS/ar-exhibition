@@ -17,7 +17,7 @@ func (h *GatewayHandler) CreateMuseum(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid museum to create"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
@@ -39,7 +39,7 @@ func (h *GatewayHandler) CreatePicture(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid picture to create"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})
@@ -61,7 +61,7 @@ func (h *GatewayHandler) CreateExhibition(ctx aero.Context) error {
 		return ctx.JSON(domain.ErrorResponse{Message: "Invalid exhibition to create"})
 	}
 
-	user := checkAuth(ctx.Request().Header("Authorization"))
+	user := checkAuth(ctx.Request().Header(utils.AuthHeader))
 	if user == nil || user.ID <= 0 {
 		ctx.SetStatus(http.StatusForbidden)
 		return ctx.JSON(domain.ErrorResponse{Message: "Not Authorized"})

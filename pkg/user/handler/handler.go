@@ -63,7 +63,7 @@ func (h *UserHandler) Signup(ctx aero.Context) error {
 	req, _ := http.NewRequest(http.MethodPost, utils.GatewayService+utils.GatewayApiMuseums,
 		bytes.NewBuffer(utils.EncodeJSON(&domain.Museum{Name: form.Museum})))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set(utils.AuthHeader, "Bearer "+token)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -105,7 +105,7 @@ func (h *UserHandler) Login(ctx aero.Context) error {
 }
 
 func (h *UserHandler) Check(ctx aero.Context) error {
-	id := user.CheckJWT(ctx.Request().Header("Authorization"))
+	id := user.CheckJWT(ctx.Request().Header(utils.AuthHeader))
 	if id > 0 {
 		return ctx.JSON(domain.User{ID: id})
 	}

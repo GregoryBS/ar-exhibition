@@ -84,10 +84,18 @@ const (
 	UserAdmin   = BaseUserApi + "/:id/admin"
 )
 
-const UserHeader = "X-User"
+const (
+	UserHeader = "X-User"
+	AuthHeader = "Authorization"
+)
 
 const (
 	BaseStatApi = "/api/v1/stats"
 )
 
 const MsgTag = "stats"
+
+const (
+	ApiPing      = "/api/v1/ping"
+	RequestLimit = 10
+)
