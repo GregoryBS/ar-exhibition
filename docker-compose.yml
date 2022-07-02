@@ -2,7 +2,7 @@ version: "3"
 services:
   database:
     image: library/postgres:13
-    restart: on-failure
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "postgres"
@@ -17,6 +17,7 @@ services:
       args:
         service: gateway
       dockerfile: Dockerfile
+    restart: on-failure
     depends_on:
       - museum
       - exhibition
@@ -37,6 +38,7 @@ services:
       args:
         service: museum
       dockerfile: Dockerfile
+    restart: on-failure
     depends_on:
       - database
       - queue
@@ -50,6 +52,7 @@ services:
       args:
         service: exhibition
       dockerfile: Dockerfile
+    restart: on-failure
     depends_on:
       - database
       - queue
@@ -63,6 +66,7 @@ services:
       args:
         service: picture
       dockerfile: Dockerfile
+    restart: on-failure
     depends_on:
       - database
       - queue
@@ -76,6 +80,7 @@ services:
       args:
         service: user
       dockerfile: Dockerfile
+    restart: on-failure
     depends_on:
       - database
       - queue
@@ -91,6 +96,7 @@ services:
       args:
         service: statistics
       dockerfile: Dockerfile
+    restart: on-failure
     depends_on:
       - database
       - queue
